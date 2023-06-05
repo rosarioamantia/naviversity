@@ -35,7 +35,8 @@ public class HomepageActivity extends AppCompatActivity {
             int itemId = item.getItemId();
             if(itemId == R.id.ride){
                 Toast.makeText(getApplicationContext(), "ride", Toast.LENGTH_SHORT).show();
-                replaceFragment(new RideFragment());
+                replaceFragment(new MapsFragment());
+                //replaceFragment(new RideFragment());
             }else if(itemId == R.id.activities){
                 Toast.makeText(getApplicationContext(), "activities", Toast.LENGTH_SHORT).show();
                 replaceFragment(new ActivitiesFragment());
@@ -43,21 +44,6 @@ public class HomepageActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "profile", Toast.LENGTH_SHORT).show();
                 replaceFragment(new ProfileFragment());
         }
-            /*
-            switch (item.getItemId()) {
-
-                case R.id.ride:
-                    replaceFragment(new RideFragment());
-                    break;
-                case R.id.activities:
-                    replaceFragment(new ActivitiesFragment());
-                    break;
-                case R.id.profile:
-                    replaceFragment(new ProfileFragment());
-                    break;
-
-            }
-             */
             return true;
         });
     }
