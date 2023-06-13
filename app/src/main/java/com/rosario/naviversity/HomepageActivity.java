@@ -67,8 +67,8 @@ public class HomepageActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                viewPager2.setVisibility(View.GONE);
-                frameLayout.setVisibility(View.VISIBLE);
+                viewPager2.setVisibility(View.VISIBLE);
+                frameLayout.setVisibility(View.GONE);
                 viewPager2.setCurrentItem(tab.getPosition());
                 if(tab.getText().equals("Cerca Passaggio")){
                     replaceFragment(new SearchRideFragment());
