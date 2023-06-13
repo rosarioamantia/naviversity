@@ -23,12 +23,12 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="VOLAREE"/>
+                android:text="Cerca Passaggio"/>
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="OOO"/>
+                android:text="Crea Passaggio"/>
 
         </com.google.android.material.tabs.TabLayout>
 

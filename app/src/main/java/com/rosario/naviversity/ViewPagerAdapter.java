@@ -14,8 +14,8 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         switch(position){
-            case 0:
-            case 1:
+            case 0: return new SearchRideFragment();
+            case 1: return new CreateRideFragment();
             default: return new SearchRideFragment();
         }
     }

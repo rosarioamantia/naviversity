@@ -18,11 +18,8 @@ import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.tabs.TabLayout;
-import com.rosario.naviversity.databinding.ActivityHomepageBinding;
 
 public class HomepageActivity extends AppCompatActivity {
-
-    //ActivityHomepageBinding binding;
 
     BottomNavigationView bottomNavigationView;
     TabLayout tabLayout;
@@ -33,10 +30,7 @@ public class HomepageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toast.makeText(getApplicationContext(), "ciao", Toast.LENGTH_LONG).show();
 
-        //to link layout xml components in Java Objects
-        //binding = ActivityHomepageBinding.inflate(getLayoutInflater());
         setContentView(R.layout.activity_homepage);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         frameLayout = findViewById(R.id.frameLayout);
@@ -45,7 +39,7 @@ public class HomepageActivity extends AppCompatActivity {
         viewPager2 = findViewById(R.id.viewPager);
         viewPager2.setAdapter(viewPagerAdapter);
 
-        replaceFragment(new CreateRideFragment());
+        replaceFragment(new SearchRideFragment());
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -56,7 +50,7 @@ public class HomepageActivity extends AppCompatActivity {
                 if(itemId == R.id.ride){
                     //tabLayout.setVisibility(View.VISIBLE);
                     Toast.makeText(getApplicationContext(), "ride", Toast.LENGTH_SHORT).show();
-                    replaceFragment(new CreateRideFragment());
+                    replaceFragment(new SearchRideFragment());
                 }else if(itemId == R.id.activities){
                     //tabLayout.setVisibility(View.GONE);
                     Toast.makeText(getApplicationContext(), "activities", Toast.LENGTH_SHORT).show();
@@ -76,6 +70,11 @@ public class HomepageActivity extends AppCompatActivity {
                 viewPager2.setVisibility(View.GONE);
                 frameLayout.setVisibility(View.VISIBLE);
                 viewPager2.setCurrentItem(tab.getPosition());
+                if(tab.getText().equals("Cerca Passaggio")){
+                    replaceFragment(new SearchRideFragment());
+                }else if (tab.getText().equals("Crea Passaggio")){
+                    replaceFragment(new CreateRideFragment());
+                }
             }
 
             @Override
@@ -93,15 +92,17 @@ public class HomepageActivity extends AppCompatActivity {
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
+                Toast.makeText(getApplicationContext(), tabLayout.getTabAt(position).getText() , Toast.LENGTH_SHORT).show();
+                /*
                 switch(position){
                     case 0:
-                    case 1:
-                    case 2: tabLayout.getTabAt(position).select();
+                    case 1: tabLayout.getTabAt(position).select();
                 }
+                 */
+                tabLayout.getTabAt(position).select();
                 super.onPageSelected(position);
             }
         });
-
     }
 
     private void replaceFragment(Fragment fragment){
