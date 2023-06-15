@@ -10,8 +10,6 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -48,15 +46,15 @@ public class HomepageActivity extends AppCompatActivity {
 
                 int itemId = item.getItemId();
                 if(itemId == R.id.ride){
-                    //tabLayout.setVisibility(View.VISIBLE);
+                    tabLayout.setVisibility(View.VISIBLE);
                     Toast.makeText(getApplicationContext(), "ride", Toast.LENGTH_SHORT).show();
                     replaceFragment(new SearchRideFragment());
                 }else if(itemId == R.id.activities){
-                    //tabLayout.setVisibility(View.GONE);
+                    tabLayout.setVisibility(View.GONE);
                     Toast.makeText(getApplicationContext(), "activities", Toast.LENGTH_SHORT).show();
                     replaceFragment(new ActivitiesFragment());
                 }else if(itemId == R.id.profile){
-                    //tabLayout.setVisibility(View.GONE);
+                    tabLayout.setVisibility(View.GONE);
                     Toast.makeText(getApplicationContext(), "profile", Toast.LENGTH_SHORT).show();
                     replaceFragment(new ProfileFragment());
                 }
@@ -70,11 +68,6 @@ public class HomepageActivity extends AppCompatActivity {
                 viewPager2.setVisibility(View.VISIBLE);
                 frameLayout.setVisibility(View.GONE);
                 viewPager2.setCurrentItem(tab.getPosition());
-                if(tab.getText().equals("Cerca Passaggio")){
-                    replaceFragment(new SearchRideFragment());
-                }else if (tab.getText().equals("Crea Passaggio")){
-                    replaceFragment(new CreateRideFragment());
-                }
             }
 
             @Override
@@ -84,21 +77,14 @@ public class HomepageActivity extends AppCompatActivity {
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                viewPager2.setVisibility(View.GONE);
-                frameLayout.setVisibility(View.VISIBLE);
+                viewPager2.setVisibility(View.VISIBLE);
+                frameLayout.setVisibility(View.GONE);
             }
         });
 
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                Toast.makeText(getApplicationContext(), tabLayout.getTabAt(position).getText() , Toast.LENGTH_SHORT).show();
-                /*
-                switch(position){
-                    case 0:
-                    case 1: tabLayout.getTabAt(position).select();
-                }
-                 */
                 tabLayout.getTabAt(position).select();
                 super.onPageSelected(position);
             }
