@@ -33,7 +33,7 @@ public class SearchRideFragment extends Fragment {
             public void onClick(View view) {
                 Fragment mapsFragment = new MapsFragment();
                 Bundle result = new Bundle();
-                result.putString("ciao", "testo da visualizzare");
+                result.putString("ciao", "testo da visualizzar");
                 getParentFragmentManager().setFragmentResult("dataFromSearch", result);
                 Toast.makeText(getContext(), "messaggio mandato", Toast.LENGTH_SHORT).show();
 
