@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentResultListener;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +17,21 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 public class MapsFragment extends Fragment {
+    Marker mark;
+
+    Geocoder geocoder;
+
+    String locationName;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -33,9 +46,24 @@ public class MapsFragment extends Fragment {
          */
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            LatLng sydney = new LatLng(-344, 1451);
-            googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+            geocoder = new Geocoder(getContext(), Locale.getDefault());
+
+            try{
+                List<Address> addressList = geocoder.getFromLocationName(locationName, 1);
+                Address address = addressList.get(0);
+                LatLng catania = new LatLng(address.getLatitude(), address.getLongitude());
+                mark = googleMap.addMarker(new MarkerOptions().position(catania).title("Marker in CT"));
+                googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(catania,14, 1, 1)));
+                googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Toast.makeText(getContext(), "Marker cliccato", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                });
+            }catch(IOException e){
+
+            }
         }
     };
 
@@ -49,6 +77,7 @@ public class MapsFragment extends Fragment {
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
                 Toast.makeText(getContext(), result.getCharSequence("ciao"), Toast.LENGTH_SHORT).show();
+                locationName = (String) result.getCharSequence("ciao");
             }
         });
         return view;
