@@ -39,13 +39,10 @@ public class HomepageActivity extends AppCompatActivity {
 
                 int itemId = item.getItemId();
                 if(itemId == R.id.ride){
-                    Toast.makeText(getApplicationContext(), "ride", Toast.LENGTH_SHORT).show();
                     replaceFragment(new SearchRideFragment());
                 }else if(itemId == R.id.activities){
-                    Toast.makeText(getApplicationContext(), "activities", Toast.LENGTH_SHORT).show();
                     replaceFragment(new ActivitiesFragment());
                 }else if(itemId == R.id.profile){
-                    Toast.makeText(getApplicationContext(), "profile", Toast.LENGTH_SHORT).show();
                     replaceFragment(new ProfileFragment());
                 }
                 return true;

@@ -5,12 +5,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentResultListener;
 
-import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -21,17 +22,18 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Locale;
 
 public class MapsFragment extends Fragment {
     Marker mark;
-
     Geocoder geocoder;
-
     String locationName;
+    POI poi;
+    Destination destination;
+
+    BottomSheetDialog dialog;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -48,22 +50,26 @@ public class MapsFragment extends Fragment {
         public void onMapReady(GoogleMap googleMap) {
             geocoder = new Geocoder(getContext(), Locale.getDefault());
 
-            try{
-                List<Address> addressList = geocoder.getFromLocationName(locationName, 1);
-                Address address = addressList.get(0);
-                LatLng catania = new LatLng(address.getLatitude(), address.getLongitude());
-                mark = googleMap.addMarker(new MarkerOptions().position(catania).title("Marker in CT"));
-                googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(catania,14, 1, 1)));
-                googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker) {
-                        Toast.makeText(getContext(), "Marker cliccato", Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                });
-            }catch(IOException e){
+            //locationName = poi.getName();
+            //List<Address> addressList = geocoder.getFromLocationName(locationName, 1);
 
-            }
+            LatLng catania = new LatLng(poi.getLatitude(), poi.getLongitude());
+            mark = googleMap.addMarker(new MarkerOptions().position(catania).title(poi.getName()));
+            mark.setSnippet("24/12/2023" + " Ore 8:00 " + "(Rosario Amantia)");
+            mark.showInfoWindow();
+
+            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(catania,14, 1, 1)));
+            googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    mark.hideInfoWindow();
+                    createDialog();
+                    dialog.show();
+                    dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+
+                    return false;
+                }
+            });
         }
     };
 
@@ -73,11 +79,12 @@ public class MapsFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
-        getParentFragmentManager().setFragmentResultListener("dataFromSearch", this, new FragmentResultListener() {
+        dialog = new BottomSheetDialog(getContext());
+        getParentFragmentManager().setFragmentResultListener("DataResult", this, new FragmentResultListener() {
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-                Toast.makeText(getContext(), result.getCharSequence("ciao"), Toast.LENGTH_SHORT).show();
-                locationName = (String) result.getCharSequence("ciao");
+                poi = (POI) result.getSerializable("POIData");
+                destination = (Destination) result.getSerializable("destinationData");
             }
         });
         return view;
@@ -92,4 +99,19 @@ public class MapsFragment extends Fragment {
             mapFragment.getMapAsync(callback);
         }
     }
+
+    private void createDialog(){
+        View v = getLayoutInflater().inflate(R.layout.bottom_create_dialog, null, false);
+        Button b = v.findViewById(R.id.button2);
+
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.setContentView(v);
+    }
+
 }
