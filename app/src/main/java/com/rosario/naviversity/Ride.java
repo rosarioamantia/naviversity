@@ -3,14 +3,15 @@ package com.rosario.naviversity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class Ride implements Serializable {
     Place start;
     Place stop;
     String owner;
-    String members;
     String date;
     String time;
+    List<String> members;
 
     public Place getStart() {
         return start;
@@ -36,14 +37,6 @@ public class Ride implements Serializable {
         this.owner = owner;
     }
 
-    public String getMembers() {
-        return members;
-    }
-
-    public void setMembers(String members) {
-        this.members = members;
-    }
-
     public String getDate() {
         return date;
     }
@@ -58,5 +51,13 @@ public class Ride implements Serializable {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public List<String> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<String> members) {
+        this.members = members;
     }
 }

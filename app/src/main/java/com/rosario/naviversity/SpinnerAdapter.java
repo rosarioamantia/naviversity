@@ -24,12 +24,12 @@ public class SpinnerAdapter extends ArrayAdapter<POI> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View rowView = layoutInflater.inflate(R.layout.custom_spinner_adapter, null, true);
+        View rowView = layoutInflater.inflate(R.layout.confirm_ride_dialog, null, true);
         POI p = new POI();
         p.setName("ok");
         //p.setLatitude("ok");
         //p.setLongitude("ok");
-        ImageView imageView = (ImageView)rowView.findViewById(R.id.imageIcon);
+        //ImageView imageView = (ImageView)rowView.findViewById(R.id.imageIcon);
 
 
         return rowView;

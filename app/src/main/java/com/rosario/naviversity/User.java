@@ -3,27 +3,34 @@ package com.rosario.naviversity;
 import java.io.Serializable;
 
 public class User implements Serializable {
-    private int _id;
-    private String _name;
+    private String name;
+    private String surname;
 
-    public User(){
-        this._id = 0;
-        this._name = "";
-    }
+    private String username;
 
-    public void setId(int id){
-        this._id = id;
-    }
-
-    public int getId(){
-        return this._id;
-    }
+    public User(){}
 
     public void setName(String name){
-        this._name = name;
+        this.name = name;
     }
 
     public String getName(){
-        return this._name;
+        return this.name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

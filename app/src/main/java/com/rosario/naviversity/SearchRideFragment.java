@@ -35,6 +35,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.time.Clock;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -111,13 +112,13 @@ public class SearchRideFragment extends Fragment {
         timeText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LocalTime hour = LocalTime.now();
+                LocalTime time = LocalTime.now();
                 timePicker = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hours, int minutes) {
-                        timeText.setText(hours + ":" + minutes);
+                        timeText.setText(String.format("%02d:%02d", hours, minutes) );
                     }
-                }, hour.getHour(), hour.getMinute(), true);
+                }, time.getHour(), time.getMinute(), true);
                 timePicker.show();
             }
         });
@@ -184,11 +185,22 @@ public class SearchRideFragment extends Fragment {
                             String pickerDate = dateText.getText().toString();
                             String pickerTime = timeText.getText().toString();
                             if(ride.getStart(). getName().equals(start.getName()) && ride.getStop().getName().equals(stop.getName()) &&
-                                pickerDate.equals(ride.getDate()) && isTimeElegible(pickerTime, ride.getTime())){
-                                    System.out.println(ride + "OKOKOKOK");
-                                    //avvia mappa
+                                    pickerDate.equals(ride.getDate()) && isTimeElegible(pickerTime, ride.getTime())){
+
+                                String rideId = ds.getKey();
+                                //passare l'unico oggetto che rappresenta la ride e cambiare fragment
+                                Bundle rideData = new Bundle();
+                                rideData.putSerializable("ride", ride);
+                                rideData.putString("rideId", rideId);
+                                getParentFragmentManager().setFragmentResult("RideData", rideData);
+                                //Toast.makeText(getContext(), rideId, Toast.LENGTH_SHORT).show();
+                                Fragment mapsFragment = new MapsFragment();
+                                FragmentTransaction transaction = getParentFragmentManager().beginTransaction().replace(R.id.frameLayout, mapsFragment);
+                                transaction.commit();
                             }
-                            listRide.add(ride);
+
+                            //implementare caso senza match
+                            //listRide.add(ride);
                         }
                     }
                     @Override
@@ -196,29 +208,19 @@ public class SearchRideFragment extends Fragment {
 
                     }
                 });
-
-
-                //recupera dati e vedi se oggetto è vuoto
-
-                /*
-
-                Fragment mapsFragment = new MapsFragment();
-                Bundle data = new Bundle();
-                data.putSerializable("POIData", poi);
-                data.putSerializable("destinationData", destination);
-                getParentFragmentManager().setFragmentResult("DataResult", data);
-
-
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction().replace(R.id.frameLayout, mapsFragment);
-                transaction.commit();
-
-                 */
             }
         });
         return view;
     }
 
-    //differiscono per meno di un ora?
     public boolean isTimeElegible(String pickerTime, String rideTime){
+        LocalTime superiorLimit = LocalTime.parse(pickerTime).plus(31, ChronoUnit.MINUTES);
+        LocalTime inferiorLimit = LocalTime.parse(pickerTime).minus(31, ChronoUnit.MINUTES);
+        LocalTime ride = LocalTime.parse(rideTime);
+
+        if(ride.isAfter(inferiorLimit) && ride.isBefore(superiorLimit)){
+            return true;
+        }
+        return false;
     }
 }

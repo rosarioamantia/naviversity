@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -21,7 +22,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         btnLogin = (Button) this.findViewById(R.id.btnLogin);
 
         //createFirebaseData();
+        //MyApplication3 per Toast personalizzato
     }
 
     public void login(View v){
@@ -44,8 +48,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void createFirebaseData(){
-        createPlaces();
-        createRides();
+        //createPlaces();
+        //createRides();
+        //createUsers();
     }
 
     private void createRides() {
@@ -55,11 +60,32 @@ public class MainActivity extends AppCompatActivity {
         Ride ride1 = new Ride();
         Place start = new Place("Piazza Stesicoro", 37.50742724675477, 15.085976081843826, "START");
         Place stop = new Place("Cittadella Universitaria", 37.524462577346235, 15.070930995861861, "STOP");
+        List<String> listUser = new ArrayList<String>();
+        listUser.add("username1");
+        listUser.add("username2");
+        ride1.setMembers(listUser);
         ride1.setStart(start);
         ride1.setStop(stop);
         ride1.setTime("12:00");
-        ride1.setDate("27/06/2023");
+        ride1.setDate("27/6/2023");
+        ride1.setOwner("amantiar");
         newRide.setValue(ride1);
+    }
+
+    private void createUsers(){
+        mDatabase = FirebaseDatabase.getInstance().getReference("user");
+        DatabaseReference newUser = mDatabase.push();
+        DatabaseReference newUser2 = mDatabase.push();
+        User u1 = new User();
+        User u2 = new User();
+        u1.setName("Rosario");
+        u1.setSurname("Amantia");
+        u1.setUsername("amantiar");
+        u2.setName("Gianluca");
+        u2.setSurname("Di Franco");
+        u2.setUsername("gdifr");
+        newUser.setValue(u1);
+        newUser2.setValue(u2);
     }
 
     public void createPlaces(){

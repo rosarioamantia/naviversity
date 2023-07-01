@@ -7,11 +7,13 @@ import androidx.fragment.app.FragmentResultListener;
 
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -23,15 +25,30 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.ktx.Firebase;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class MapsFragment extends Fragment {
     Marker mark;
     Geocoder geocoder;
-    String locationName;
-    POI poi;
-    Destination destination;
+
+    FirebaseDatabase mDatabase;
+
+    DatabaseReference rideReference;
+    Ride ride;
+
+    List<String> listMembers;
+
+    String rideId;
 
     BottomSheetDialog dialog;
 
@@ -49,22 +66,26 @@ public class MapsFragment extends Fragment {
         @Override
         public void onMapReady(GoogleMap googleMap) {
             geocoder = new Geocoder(getContext(), Locale.getDefault());
+            Place startPlace = ride.getStart();
+            Place stopPlace = ride.getStop();
 
             //locationName = poi.getName();
             //List<Address> addressList = geocoder.getFromLocationName(locationName, 1);
 
-            LatLng catania = new LatLng(poi.getLatitude(), poi.getLongitude());
-            mark = googleMap.addMarker(new MarkerOptions().position(catania).title(poi.getName()));
-            mark.setSnippet("24/12/2023" + " Ore 8:00 " + "(Rosario Amantia)");
+            LatLng startCoordinates = new LatLng(startPlace.getLatitude(), startPlace.getLongitude());
+            mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(startPlace.getName() + " - " +  stopPlace.getName()));
+            mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore:" + ride.getOwner());
             mark.showInfoWindow();
 
-            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(catania,14, 1, 1)));
+            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,14, 1, 1)));
             googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
                     mark.hideInfoWindow();
-                    createDialog();
+                    showDialog();
                     dialog.show();
+
+                    //*** TODO: controllare a che serve e come settare ***/////
                     dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
                     return false;
@@ -80,11 +101,12 @@ public class MapsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
         dialog = new BottomSheetDialog(getContext());
-        getParentFragmentManager().setFragmentResultListener("DataResult", this, new FragmentResultListener() {
+        mDatabase = FirebaseDatabase.getInstance();
+        getParentFragmentManager().setFragmentResultListener("RideData", this, new FragmentResultListener() {
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-                poi = (POI) result.getSerializable("POIData");
-                destination = (Destination) result.getSerializable("destinationData");
+                ride = (Ride) result.getSerializable("ride");
+                rideId = result.getString("rideId");
             }
         });
         return view;
@@ -100,18 +122,62 @@ public class MapsFragment extends Fragment {
         }
     }
 
-    private void createDialog(){
-        View v = getLayoutInflater().inflate(R.layout.bottom_create_dialog, null, false);
-        Button b = v.findViewById(R.id.button2);
+    private void showDialog(){
+        View v = getLayoutInflater().inflate(R.layout.confirm_ride_dialog, null, false);
+        Button btnConfirm = v.findViewById(R.id.btnConfirm);
+        fillDialogRideData(v);
 
-        b.setOnClickListener(new View.OnClickListener() {
+        btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(getContext(), rideId, Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
+
+                rideReference = mDatabase.getReference("ride");
+
+                //SI DEVE SALVARE l'username nella child
+                User simulazioneUser = new User();
+                //ipotizziamo che questo sia l'utente attualmente loggato
+                simulazioneUser.setUsername("ferlaf");
+                rideReference.child(rideId).child("members").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<String> member = (ArrayList<String>) snapshot.getValue();
+                        if(member != null){
+                            member.add(simulazioneUser.getUsername());
+                        }else{
+                            member = new ArrayList<String>();
+                            member.add(simulazioneUser.getUsername());
+                        }
+
+                        rideReference.child(rideId).child("members").setValue(member);
+                        ///*** TODO qui andare a mettere la gestione con udpateChildren
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+                //ride.get
+                //Toast toast = Toast.makeText(getContext(), "Prenotazione confermata", Toast.LENGTH_SHORT);
+                //toast.show();
             }
         });
 
         dialog.setContentView(v);
     }
 
+    private void fillDialogRideData(View v){
+        TextView owner = v.findViewById(R.id.rideOwner);
+        TextView start = v.findViewById(R.id.rideStart);
+        TextView stop = v.findViewById(R.id.rideStop);
+        TextView date = v.findViewById(R.id.rideDate);
+        TextView time = v.findViewById(R.id.rideTime);
+        owner.setText(ride.getOwner());
+        start.setText(ride.getStart().getName());
+        stop.setText(ride.getStop().getName());
+        date.setText(ride.getDate());
+        time.setText(ride.getTime());
+    }
 }
