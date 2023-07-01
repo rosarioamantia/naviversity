@@ -38,8 +38,10 @@ public class HomepageActivity extends AppCompatActivity {
                 frameLayout.setVisibility(View.VISIBLE);
 
                 int itemId = item.getItemId();
-                if(itemId == R.id.ride){
+                if(itemId == R.id.searchRide){
                     replaceFragment(new SearchRideFragment());
+                }else if(itemId == R.id.createRide) {
+                    replaceFragment(new CreateRideFragment());
                 }else if(itemId == R.id.activities){
                     replaceFragment(new ActivitiesFragment());
                 }else if(itemId == R.id.profile){
