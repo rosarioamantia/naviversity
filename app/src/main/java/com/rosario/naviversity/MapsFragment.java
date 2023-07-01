@@ -136,18 +136,16 @@ public class MapsFragment extends Fragment {
                 rideReference = mDatabase.getReference("ride");
 
                 //SI DEVE SALVARE l'username nella child
-                User simulazioneUser = new User();
-                //ipotizziamo che questo sia l'utente attualmente loggato
-                simulazioneUser.setUsername("ferlaf");
+                String actualUser = "genericUserID";
                 rideReference.child(rideId).child("members").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         List<String> member = (ArrayList<String>) snapshot.getValue();
                         if(member != null){
-                            member.add(simulazioneUser.getUsername());
+                            member.add(actualUser);
                         }else{
                             member = new ArrayList<String>();
-                            member.add(simulazioneUser.getUsername());
+                            member.add(actualUser);
                         }
 
                         rideReference.child(rideId).child("members").setValue(member);
