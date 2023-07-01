@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         btnLogin = (Button) this.findViewById(R.id.btnLogin);
 
-        //createFirebaseData();
+        createFirebaseData();
         //MyApplication3 per Toast personalizzato
     }
 
@@ -67,8 +67,8 @@ public class MainActivity extends AppCompatActivity {
         ride1.setStart(start);
         ride1.setStop(stop);
         ride1.setTime("12:00");
-        ride1.setDate("27/6/2023");
         ride1.setOwner("amantiar");
+        ride1.setDate("1/7/2023");
         newRide.setValue(ride1);
     }
 

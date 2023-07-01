@@ -34,8 +34,10 @@ import com.google.firebase.ktx.Firebase;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MapsFragment extends Fragment {
     Marker mark;
@@ -74,7 +76,7 @@ public class MapsFragment extends Fragment {
 
             LatLng startCoordinates = new LatLng(startPlace.getLatitude(), startPlace.getLongitude());
             mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(startPlace.getName() + " - " +  stopPlace.getName()));
-            mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore:" + ride.getOwner());
+            mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore: " + ride.getOwner());
             mark.showInfoWindow();
 
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,14, 1, 1)));
@@ -137,19 +139,23 @@ public class MapsFragment extends Fragment {
 
                 //SI DEVE SALVARE l'username nella child
                 String actualUser = "genericUserID";
-                rideReference.child(rideId).child("members").addListenerForSingleValueEvent(new ValueEventListener() {
+                rideReference.child(rideId).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        List<String> member = (ArrayList<String>) snapshot.getValue();
-                        if(member != null){
-                            member.add(actualUser);
+                        Ride r = snapshot.getValue(Ride.class);
+                        if(r.getMembers() != null){
+                            r.getMembers().add(actualUser);
                         }else{
-                            member = new ArrayList<String>();
-                            member.add(actualUser);
+                            List<String> firstMemberList = new ArrayList<String>();
+                            firstMemberList.add(actualUser);
+                            r.setMembers(firstMemberList);
                         }
+                        Map<String, Object> rideValues = r.toMap();
 
-                        rideReference.child(rideId).child("members").setValue(member);
-                        ///*** TODO qui andare a mettere la gestione con udpateChildren
+                        Map<String, Object> childUpdates = new HashMap<>();
+                        childUpdates.put(snapshot.getKey(), rideValues);
+                        rideReference.updateChildren(childUpdates);
+                        Toast.makeText(getContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -157,9 +163,6 @@ public class MapsFragment extends Fragment {
 
                     }
                 });
-                //ride.get
-                //Toast toast = Toast.makeText(getContext(), "Prenotazione confermata", Toast.LENGTH_SHORT);
-                //toast.show();
             }
         });
 

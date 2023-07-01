@@ -1,10 +1,16 @@
 package com.rosario.naviversity;
 
+import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@IgnoreExtraProperties
 public class Ride implements Serializable {
     Place start;
     Place stop;
@@ -59,5 +65,18 @@ public class Ride implements Serializable {
 
     public void setMembers(List<String> members) {
         this.members = members;
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("start", start);
+        result.put("stop", stop);
+        result.put("owner", owner);
+        result.put("date", date);
+        result.put("time", time);
+        result.put("members", members);
+
+        return result;
     }
 }
