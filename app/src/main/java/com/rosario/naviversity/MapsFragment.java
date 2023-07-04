@@ -116,7 +116,8 @@ public class MapsFragment extends Fragment {
             btnSearch.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    rideReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    //agisci qui per gestire più ride e proporle (limit to first)
+                    rideReference.limitToFirst(1).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             for(DataSnapshot ds : snapshot.getChildren()){
