@@ -12,6 +12,8 @@ import java.util.Map;
 
 @IgnoreExtraProperties
 public class Ride implements Serializable {
+    @Exclude
+    String id;
     Place start;
     Place stop;
     String owner;
@@ -65,6 +67,14 @@ public class Ride implements Serializable {
 
     public void setMembers(List<String> members) {
         this.members = members;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Exclude

@@ -60,7 +60,6 @@ public class SearchRideFragment extends Fragment {
     List<Place> listStart;
     List<Ride> listRide;
     List<Place> listStop;
-    //EditText dateText;
     DatePickerDialog datePicker;
     EditText timeText;
     TimePickerDialog timePicker;
