@@ -30,7 +30,6 @@ public class HomepageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_homepage);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         frameLayout = findViewById(R.id.frameLayout);
-
         replaceFragment(new MapsFragment());
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
@@ -39,7 +38,7 @@ public class HomepageActivity extends AppCompatActivity {
 
                 int itemId = item.getItemId();
                 if(itemId == R.id.searchRide){
-                    replaceFragment(new SearchRideFragment());
+                    replaceFragment(new MapsFragment());
                 }else if(itemId == R.id.createRide) {
                     replaceFragment(new CreateRideFragment());
                 }else if(itemId == R.id.activities){

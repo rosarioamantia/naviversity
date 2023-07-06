@@ -89,7 +89,7 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:gravity="right"
+                    android:gravity="end"
                     app:layout_constraintEnd_toEndOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

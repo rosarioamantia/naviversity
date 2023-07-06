@@ -86,7 +86,7 @@ public class MapsFragment extends Fragment {
                 public boolean onMarkerClick(Marker marker) {
                     mark.hideInfoWindow();
                     View confirmRideView = getLayoutInflater().inflate(R.layout.confirm_ride_dialog, null, false);
-                    showDialog(confirmRideView);
+                    createDialog(confirmRideView);
 
                     Button btnConfirm = confirmRideView.findViewById(R.id.btnConfirm);
                     btnConfirm.setOnClickListener(new View.OnClickListener() {
@@ -95,7 +95,6 @@ public class MapsFragment extends Fragment {
                             rideReference.child(ride.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    //ride = snapshot.getValue(Ride.class);
                                     updateRideMembers(ride);
                                 }
 
@@ -270,9 +269,9 @@ public class MapsFragment extends Fragment {
         }
     }
 
-    private void showDialog(View v){
-        dialog.setContentView(v);
+    private void createDialog(View v){
         fillDialogData(v);
+        dialog.setContentView(v);
         dialog.show();
     }
 
@@ -310,7 +309,6 @@ public class MapsFragment extends Fragment {
             ride.setMembers(firstMemberList);
         }
         Map<String, Object> rideValues = ride.toMap();
-
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put(ride.getId(), rideValues);
         rideReference.updateChildren(childUpdates);

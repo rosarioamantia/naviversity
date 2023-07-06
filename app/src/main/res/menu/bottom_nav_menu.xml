@@ -7,8 +7,8 @@
         android:icon="@drawable/baseline_map_24"/>
     <item
         android:id="@+id/createRide"
-        android:title="Crea passaggi"
-        android:icon="@drawable/baseline_map_24"/>
+        android:title="Crea passaggio"
+        android:icon="@drawable/baseline_add_circle_outline_24"/>
     <item android:title="Attività"
         android:id="@+id/activities"
         android:icon="@drawable/baseline_bookmarks_24"/>
