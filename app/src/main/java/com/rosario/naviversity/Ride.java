@@ -20,6 +20,16 @@ public class Ride implements Serializable {
     String date;
     String time;
     List<String> members;
+    Car car;
+
+    public Ride(Place start, Place stop, String owner, String date, String time){
+        this.start = start;
+        this.stop = stop;
+        this.owner = owner;
+        this.date = date;
+        this.time = time;
+    }
+    public Ride(){}
 
     public Place getStart() {
         return start;
@@ -75,6 +85,14 @@ public class Ride implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
     }
 
     @Exclude

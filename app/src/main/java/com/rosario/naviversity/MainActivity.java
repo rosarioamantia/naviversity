@@ -56,10 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private void createRides() {
         mDatabase = FirebaseDatabase.getInstance().getReference("ride");
         DatabaseReference newRide = mDatabase.push();
-        DatabaseReference newRide2 = mDatabase.push();
         Ride ride1 = new Ride();
         Place start = new Place("Piazza Stesicoro", 37.50742724675477, 15.085976081843826, "START");
         Place stop = new Place("Cittadella Universitaria", 37.524462577346235, 15.070930995861861, "STOP");
+        Car car = new Car("Fiat", "Panda", "Rossa");
         List<String> listUser = new ArrayList<String>();
         listUser.add("username1");
         listUser.add("username2");
@@ -68,7 +68,8 @@ public class MainActivity extends AppCompatActivity {
         ride1.setStop(stop);
         ride1.setTime("12:00");
         ride1.setOwner("amantiar");
-        ride1.setDate("1/7/2023");
+        ride1.setDate("8/7/2023");
+        ride1.setCar(car);
         newRide.setValue(ride1);
     }
 

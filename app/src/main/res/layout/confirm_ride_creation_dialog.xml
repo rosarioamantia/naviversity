@@ -24,7 +24,7 @@
         android:id="@+id/ownerText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
+        android:layout_marginStart="30dp"
         android:layout_marginTop="25dp"
         android:text="Organizzatore"
         android:textSize="18sp"
@@ -34,25 +34,27 @@
 
     <TextView
         android:id="@+id/rideOwner"
-        android:layout_width="wrap_content"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
-        android:layout_marginEnd="40dp"
-        android:text="Organizzatore"
+        android:layout_marginEnd="30dp"
+        android:ellipsize="middle"
+        android:maxLines="1"
+        android:gravity="end"
         android:textSize="18sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/confirmText" />
 
     <TextView
         android:id="@+id/rideStart"
-        android:layout_width="wrap_content"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="40dp"
-        android:text="Partenza"
+        android:layout_marginEnd="30dp"
+        android:ellipsize="marquee"
+        android:maxLines="2"
+        android:gravity="end"
         android:textSize="18sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rideOwner" />
 
@@ -60,7 +62,7 @@
         android:id="@+id/textStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
+        android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
         android:text="Partenza"
         android:textSize="18sp"
@@ -72,23 +74,25 @@
         android:id="@+id/textStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
+        android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
         android:text="Destinazione"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textStart" />
+        app:layout_constraintTop_toBottomOf="@+id/rideStart" />
+
 
     <TextView
         android:id="@+id/rideStop"
-        android:layout_width="wrap_content"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="40dp"
-        android:text="Destinazione"
+        android:layout_marginEnd="30dp"
+        android:ellipsize="marquee"
+        android:maxLines="2"
+        android:gravity="end"
         android:textSize="18sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rideStart" />
 
@@ -96,53 +100,65 @@
         android:id="@+id/textDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="30dp"
         android:text="Data"
         android:textSize="18sp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/dateInputLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textStop" />
+        app:layout_constraintTop_toTopOf="@+id/dateInputLayout" />
 
-    <TextView
-        android:id="@+id/rideDate"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/dateInputLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="40dp"
-        android:text="Data"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:layout_marginEnd="30dp"
+        tools:layout_editor_absoluteX="24dp"
+        android:hint="Seleziona la data"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rideStop" />
+        app:layout_constraintTop_toBottomOf="@+id/rideStop">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/rideDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Seleziona la data"
+            android:focusable="false"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:id="@+id/textTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="30dp"
+        android:layout_marginStart="30dp"
         android:text="Orario"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/btnConfirm"
+        app:layout_constraintBottom_toBottomOf="@+id/timeInputLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textDate" />
+        app:layout_constraintTop_toTopOf="@+id/timeInputLayout" />
 
-    <TextView
-        android:id="@+id/rideTime"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/timeInputLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="40dp"
+        android:layout_marginEnd="30dp"
         android:layout_marginBottom="30dp"
-        android:text="Orario"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:focusable="false"
+        android:hint="Seleziona l'orario"
         app:layout_constraintBottom_toTopOf="@+id/btnConfirm"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rideDate" />
+        app:layout_constraintTop_toBottomOf="@+id/dateInputLayout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/rideTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:hint="Seleziona l'orario" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnConfirm"
