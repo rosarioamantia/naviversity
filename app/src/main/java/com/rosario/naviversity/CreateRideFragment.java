@@ -239,5 +239,6 @@ public class CreateRideFragment extends Fragment {
 
         dbReference.updateChildren(childUpdates);
         Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();
+        dialog.hide();
     }
 }
