@@ -12,6 +12,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -29,6 +30,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     Button btnLogin;
+
+    TextInputEditText editTextEmail, editTextPassword;
     DatabaseReference mDatabase;
 
 
@@ -37,13 +40,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         btnLogin = (Button) this.findViewById(R.id.btnLogin);
+        editTextEmail = findViewById(R.id.email);
+        editTextPassword = findViewById(R.id.password);
+
 
         createFirebaseData();
         //MyApplication3 per Toast personalizzato
     }
 
     public void login(View v){
-        Intent myIntent = new Intent(MainActivity.this, HomepageActivity.class);
+        Intent myIntent = new Intent(MainActivity.this, RegistrationActivity.class);
         MainActivity.this.startActivity(myIntent);
     }
 
