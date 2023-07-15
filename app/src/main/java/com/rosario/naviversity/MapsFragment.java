@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -76,6 +77,7 @@ public class MapsFragment extends Fragment {
     List<String> listMembers;
     String rideId;
     BottomSheetDialog dialog;
+    FirebaseAuth mAuth;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
@@ -177,6 +179,7 @@ public class MapsFragment extends Fragment {
         stopSpinner.setAdapter(stopAdapter);
         placeReference = mDatabase.getReference("place");
         rideReference = mDatabase.getReference("ride");
+        //mAuth = FirebaseAuth.getInstance();
 
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override

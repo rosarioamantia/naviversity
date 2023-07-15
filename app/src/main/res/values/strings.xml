@@ -8,4 +8,20 @@
     <string name="login">Login</string>
     <string name="registration">Registration</string>
     <string name="register">Register</string>
+    <string name="crea_account">Crea Account</string>
+    <string name="registration_name">Nome</string>
+    <string name="registration_surname">Cognome</string>
+    <string name="registration_number">Numero di Telefono</string>
+    <string name="registration_phone">Numero di Telefono</string>
+
+    <string-array name="my_array">
+        <item>Rosso</item>
+        <item>Nero</item>
+        <item>Blu</item>
+        <item>Bianco</item>
+        <item>Verde</item>
+        <item>Grigio</item>
+        <item>Arancione</item>
+        <item>Giallo</item>
+    </string-array>
 </resources>
