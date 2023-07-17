@@ -13,6 +13,9 @@
     <string name="registration_surname">Cognome</string>
     <string name="registration_number">Numero di Telefono</string>
     <string name="registration_phone">Numero di Telefono</string>
+    <string name="error_weak_password">Password troppo corta</string>
+    <string name="error_invalid_email">Email non valida</string>
+    <string name="error_user_exists">Utente esistente</string>
 
     <string-array name="my_array">
         <item>Rosso</item>

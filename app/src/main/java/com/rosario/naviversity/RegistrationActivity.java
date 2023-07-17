@@ -1,5 +1,7 @@
 package com.rosario.naviversity;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -10,6 +12,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +33,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
@@ -53,7 +59,7 @@ import java.util.regex.Pattern;
 public class RegistrationActivity extends AppCompatActivity {
 
     Button btnReg;
-    TextInputEditText editTextEmail, editTextPassword;
+    TextInputEditText editTextEmail, editTextPassword, editTextName, editTextSurname, editTextPhone;
     DatabaseReference mDatabase;
     FirebaseAuth mAuth;
     SwitchMaterial carSwitch;
@@ -76,6 +82,9 @@ public class RegistrationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_registration);
         btnReg = this.findViewById(R.id.btn_register);
         editTextEmail = findViewById(R.id.email);
+        editTextName = findViewById(R.id.name);
+        editTextSurname = findViewById(R.id.surname);
+        editTextPhone = findViewById(R.id.phone);
         editTextPassword = findViewById(R.id.password);
         mAuth = FirebaseAuth.getInstance();
         logTxt = findViewById(R.id.logTxt);
@@ -90,8 +99,7 @@ public class RegistrationActivity extends AppCompatActivity {
                         this,
                         androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
                         carColors);
-        AutoCompleteTextView colorTxt =
-                findViewById(R.id.outlined_exposed_dropdown_editable);
+        AutoCompleteTextView colorTxt = findViewById(R.id.outlined_exposed_dropdown_editable);
         colorTxt.setAdapter(adapter);
 
         carSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -118,21 +126,20 @@ public class RegistrationActivity extends AppCompatActivity {
                 password = String.valueOf(editTextPassword.getText());
                 String unictRegexPattern = "^[A-Za-z0-9._%+-]+@" + Pattern.quote("studium.unict.it") + "$";
 
-                /*if(TextUtils.isEmpty(email)){
+                if(TextUtils.isEmpty(email)){
                     editTextEmail.setError("Inserire un'email");
+                    editTextEmail.requestFocus();
                     return;
                 }else{
                     if(!email.matches(unictRegexPattern)){
-                        //Toast.makeText(getApplicationContext(), "Inserire email unict", Toast.LENGTH_SHORT).show();
                         editTextEmail.setError("Inserire un'email unict");
+                        editTextEmail.requestFocus();
                         return;
                     }
                 }
-
-                 */
-
                 if(TextUtils.isEmpty(password)){
                     editTextPassword.setError("Inserire una password");
+                    editTextPassword.requestFocus();
                     return;
                 }
 
@@ -141,28 +148,48 @@ public class RegistrationActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            user.sendEmailVerification()
+                            String email, password;
+                            email = String.valueOf(editTextEmail.getText());
+
+                            String name, surname, phone;
+                            name = String.valueOf(editTextName.getText());
+                            surname = String.valueOf(editTextSurname.getText());
+                            phone = String.valueOf(editTextPhone.getText());
+
+                            FirebaseUser fUser = mAuth.getCurrentUser();
+                            //createUserData() -> estrai metodo
+                            User user = new User(name, surname, phone);
+                            if(carSwitch.isChecked()){
+                                Car car = new Car();
+                            }
+
+                            //////////////////////////
+                            fUser.sendEmailVerification()
                                     .addOnCompleteListener(emailTask -> {
                                         if (emailTask.isSuccessful()) {
                                             Toast.makeText(getApplicationContext(), "Ti è stata mandata una e-mail", Toast.LENGTH_SHORT).show();
                                         }
                                     });
                         } else {
-                            //Toast.makeText(getApplicationContext(), "ENTRATO", Toast.LENGTH_SHORT).show();
-                            Toast.makeText(getApplicationContext(), task.getException().getClass() + "", Toast.LENGTH_LONG).show();
-                            //System.out.println("LOCALIZED MESSAGE " + task.getException().getLocalizedMessage().toString());
-                           // System.out.println("MESSAGE " + task.getException().getMessage());
-
-
-                            // La creazione dell'utente ha fallito
+                            try {
+                                throw task.getException();
+                            } catch(FirebaseAuthWeakPasswordException e) {
+                                editTextPassword.setError(getString(R.string.error_weak_password));
+                                editTextPassword.requestFocus();
+                            } catch(FirebaseAuthInvalidCredentialsException e) {
+                                editTextEmail.setError(getString(R.string.error_invalid_email));
+                                editTextEmail.requestFocus();
+                            } catch(FirebaseAuthUserCollisionException e) {
+                                editTextEmail.setError(getString(R.string.error_user_exists));
+                                editTextEmail.requestFocus();
+                            } catch(Exception e) {
+                                Log.e(TAG, e.getMessage());
+                            }
                         }
-
                     }
                 });
             }
         });
-
     }
 
     public void switchCarDetailsVisibility(boolean checked){
