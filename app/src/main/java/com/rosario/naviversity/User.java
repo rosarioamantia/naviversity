@@ -1,6 +1,10 @@
 package com.rosario.naviversity;
 
+import com.google.firebase.database.Exclude;
+
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class User implements Serializable {
     private String name;
@@ -52,5 +56,16 @@ public class User implements Serializable {
 
     public void setCar(Car car) {
         this.car = car;
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("name", name);
+        result.put("surname", surname);
+        result.put("phone", phone);
+        result.put("isCarOwner", isCarOwner);
+        result.put("car", car);
+        return result;
     }
 }

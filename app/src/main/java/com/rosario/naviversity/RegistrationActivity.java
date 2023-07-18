@@ -52,7 +52,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -60,13 +62,15 @@ public class RegistrationActivity extends AppCompatActivity {
 
     Button btnReg;
     TextInputEditText editTextEmail, editTextPassword, editTextName, editTextSurname, editTextPhone;
-    DatabaseReference mDatabase;
+    FirebaseDatabase mDatabase;
+    DatabaseReference dbReference;
     FirebaseAuth mAuth;
     SwitchMaterial carSwitch;
     TextView logTxt;
     EditText carModelTxt, carPlateTxt;
-    TextInputLayout carColorTxt;
+    TextInputLayout carColorInputLayout;
     String[] carColors;
+    AutoCompleteTextView carColorTxt;
 
     @Override
     public void onBackPressed() {
@@ -80,6 +84,8 @@ public class RegistrationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
+        mDatabase = FirebaseDatabase.getInstance();
+        dbReference = mDatabase.getReference();
         btnReg = this.findViewById(R.id.btn_register);
         editTextEmail = findViewById(R.id.email);
         editTextName = findViewById(R.id.name);
@@ -89,18 +95,16 @@ public class RegistrationActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         logTxt = findViewById(R.id.logTxt);
         carSwitch = findViewById(R.id.car_switch);
-        carModelTxt = findViewById(R.id.model_txt);
-        carPlateTxt = findViewById(R.id.plate_txt);
-        carColorTxt = findViewById(R.id.color_input_layout);
+        carModelTxt = findViewById(R.id.car_model_txt);
+        carPlateTxt = findViewById(R.id.car_plate_txt);
+        carColorInputLayout = findViewById(R.id.car_color_input_layout);
         carColors = getResources().getStringArray(R.array.my_array);
+        carColorTxt = findViewById(R.id.car_color_txt);
 
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
                         carColors);
-        AutoCompleteTextView colorTxt = findViewById(R.id.outlined_exposed_dropdown_editable);
-        colorTxt.setAdapter(adapter);
+        carColorTxt.setAdapter(adapter);
 
         carSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -130,13 +134,17 @@ public class RegistrationActivity extends AppCompatActivity {
                     editTextEmail.setError("Inserire un'email");
                     editTextEmail.requestFocus();
                     return;
-                }else{
+                }
+                /* SBLOCCA PER CONTROLLARE DOMINIO MAIL
+                else{
                     if(!email.matches(unictRegexPattern)){
                         editTextEmail.setError("Inserire un'email unict");
                         editTextEmail.requestFocus();
                         return;
                     }
                 }
+
+                 */
                 if(TextUtils.isEmpty(password)){
                     editTextPassword.setError("Inserire una password");
                     editTextPassword.requestFocus();
@@ -148,22 +156,28 @@ public class RegistrationActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            String email, password;
-                            email = String.valueOf(editTextEmail.getText());
-
                             String name, surname, phone;
                             name = String.valueOf(editTextName.getText());
                             surname = String.valueOf(editTextSurname.getText());
                             phone = String.valueOf(editTextPhone.getText());
 
                             FirebaseUser fUser = mAuth.getCurrentUser();
+
                             //createUserData() -> estrai metodo
                             User user = new User(name, surname, phone);
                             if(carSwitch.isChecked()){
-                                Car car = new Car();
+                                String model = String.valueOf(carModelTxt.getText());
+                                String plate = String.valueOf(carPlateTxt.getText());
+                                String color = String.valueOf(carColorTxt.getText());
+                                Car car = new Car(model, plate, color);
+                                user.setCar(car);
+                                user.setCarOwner(true);
                             }
-
                             //////////////////////////
+
+
+                            writeNewUser(user);
+
                             fUser.sendEmailVerification()
                                     .addOnCompleteListener(emailTask -> {
                                         if (emailTask.isSuccessful()) {
@@ -197,23 +211,35 @@ public class RegistrationActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Enter email", Toast.LENGTH_SHORT).show();
             carModelTxt.setVisibility(View.VISIBLE);
             carPlateTxt.setVisibility(View.VISIBLE);
-            carColorTxt.setVisibility(View.VISIBLE);
+            carColorInputLayout.setVisibility(View.VISIBLE);
 
             ConstraintLayout constraintLayout = findViewById(R.id.registration_layout);
             ConstraintSet constraintSet = new ConstraintSet();
             constraintSet.clone(constraintLayout);
-            constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.color_input_layout, ConstraintSet.BOTTOM,20);
+            constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.car_color_input_layout, ConstraintSet.BOTTOM,20);
             constraintSet.applyTo(constraintLayout);
         }else{
             Toast.makeText(getApplicationContext(), "Enter ca<z", Toast.LENGTH_SHORT).show();
             carModelTxt.setVisibility(View.GONE);
             carPlateTxt.setVisibility(View.GONE);
-            carColorTxt.setVisibility(View.GONE);
+            carColorInputLayout.setVisibility(View.GONE);
             ConstraintLayout constraintLayout = findViewById(R.id.registration_layout);
             ConstraintSet constraintSet = new ConstraintSet();
             constraintSet.clone(constraintLayout);
             constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.car_switch, ConstraintSet.BOTTOM,0);
             constraintSet.applyTo(constraintLayout);
         }
+    }
+
+    private void writeNewUser(User user){
+        String key = dbReference.child("user").push().getKey();
+        Map<String, Object> userValues = user.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();
+
+        //one put -> one update in a different table
+        childUpdates.put("/user/" + key, userValues);
+        //es. childUpdates.put("/ride/organizers" + key, userValues);
+
+        dbReference.updateChildren(childUpdates);
     }
 }

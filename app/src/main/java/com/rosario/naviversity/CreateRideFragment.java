@@ -233,9 +233,9 @@ public class CreateRideFragment extends Fragment {
         Map<String, Object> rideValues = ride.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        //one put -> one update in table
+        //one put -> one update in a different table
         childUpdates.put("/ride/" + key, rideValues);
-        //childUpdates.put("/user/" + key, rideValues);
+        //childUpdates.put("/user/ride_subscribed/" + key, rideValues);
 
         dbReference.updateChildren(childUpdates);
         Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();

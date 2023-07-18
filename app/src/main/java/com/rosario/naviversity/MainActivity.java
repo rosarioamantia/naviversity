@@ -39,14 +39,13 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     Button btnLogin;
     TextInputEditText editTextEmail, editTextPassword;
-    DatabaseReference mDatabase;
     FirebaseAuth mAuth;
     TextView regTxt;
     @Override
     public void onStart(){
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
+        if(currentUser != null && currentUser.isEmailVerified()){
             Toast.makeText(getApplicationContext(), "Utente già loggato", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getApplicationContext(), HomepageActivity.class);
             startActivity(intent);

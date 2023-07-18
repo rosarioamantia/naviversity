@@ -45,7 +45,7 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:hint="@string/email"
-            android:text="ciao@ciao.it"
+            android:text="rosario.am@outlook.it"
             tools:layout_editor_absoluteX="1dp"
             tools:layout_editor_absoluteY="371dp" />
 
@@ -69,7 +69,7 @@
             android:layout_height="wrap_content"
             android:inputType="textPassword"
             android:focusable="true"
-            android:text="x"
+            android:text="xxxxxxx"
             android:hint="@string/password"
             tools:layout_editor_absoluteX="1dp"
             tools:layout_editor_absoluteY="371dp" />
@@ -94,6 +94,7 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:hint="@string/registration_name"
+            android:text="Rosario"
             tools:layout_editor_absoluteX="1dp"
             tools:layout_editor_absoluteY="371dp" />
 
@@ -116,6 +117,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:focusable="true"
+            android:text="Amantia"
             android:hint="@string/registration_surname"
             tools:layout_editor_absoluteX="1dp"
             tools:layout_editor_absoluteY="371dp" />
@@ -140,6 +142,7 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:hint="@string/registration_phone"
+            android:text="3450538443"
             android:inputType="phone"
             tools:layout_editor_absoluteX="1dp"
             tools:layout_editor_absoluteY="371dp" />
@@ -154,40 +157,40 @@
         app:layout_constraintTop_toBottomOf="@+id/phone_input_layout" />
 
     <EditText
-        android:id="@+id/model_txt"
+        android:id="@+id/car_model_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="Modello"
         android:visibility="gone"
         android:maxLength="15"
-        app:layout_constraintBottom_toTopOf="@+id/color_input_layout"
+        app:layout_constraintBottom_toTopOf="@+id/car_color_input_layout"
         app:layout_constraintStart_toStartOf="@+id/car_switch"
         app:layout_constraintTop_toBottomOf="@+id/car_switch" />
 
     <EditText
-        android:id="@+id/plate_txt"
+        android:id="@+id/car_plate_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:visibility="gone"
         android:hint="Targa"
         android:maxLength="7"
-        app:layout_constraintStart_toEndOf="@+id/model_txt"
+        app:layout_constraintStart_toEndOf="@+id/car_model_txt"
         app:layout_constraintTop_toBottomOf="@+id/car_switch" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/color_input_layout"
+        android:id="@+id/car_color_input_layout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:layout_marginTop="5dp"
         android:hint="Colore"
-        app:layout_constraintStart_toStartOf="@+id/model_txt"
-        app:layout_constraintTop_toBottomOf="@+id/model_txt">
+        app:layout_constraintStart_toStartOf="@+id/car_model_txt"
+        app:layout_constraintTop_toBottomOf="@+id/car_model_txt">
 
         <AutoCompleteTextView
-            android:id="@+id/outlined_exposed_dropdown_editable"
+            android:id="@+id/car_color_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:focusable="false"
@@ -204,7 +207,7 @@
         android:onClick="login"
         android:text="Registrati"
         app:layout_constraintEnd_toEndOf="@+id/phone_input_layout"
-        app:layout_constraintStart_toStartOf="@+id/color_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/car_color_input_layout"
         app:layout_constraintTop_toBottomOf="@+id/car_switch" />
 
     <TextView
