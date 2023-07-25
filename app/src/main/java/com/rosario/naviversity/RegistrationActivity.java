@@ -162,21 +162,7 @@ public class RegistrationActivity extends AppCompatActivity {
                             phone = String.valueOf(editTextPhone.getText());
 
                             FirebaseUser fUser = mAuth.getCurrentUser();
-
-                            //createUserData() -> estrai metodo
-                            User user = new User(name, surname, phone);
-                            if(carSwitch.isChecked()){
-                                String model = String.valueOf(carModelTxt.getText());
-                                String plate = String.valueOf(carPlateTxt.getText());
-                                String color = String.valueOf(carColorTxt.getText());
-                                Car car = new Car(model, plate, color);
-                                user.setCar(car);
-                                user.setCarOwner(true);
-                            }
-                            //////////////////////////
-
-
-                            writeNewUser(user);
+                            saveNewUserData(name, surname, phone);
 
                             fUser.sendEmailVerification()
                                     .addOnCompleteListener(emailTask -> {
@@ -208,7 +194,6 @@ public class RegistrationActivity extends AppCompatActivity {
 
     public void switchCarDetailsVisibility(boolean checked){
         if(checked){
-            Toast.makeText(getApplicationContext(), "Enter email", Toast.LENGTH_SHORT).show();
             carModelTxt.setVisibility(View.VISIBLE);
             carPlateTxt.setVisibility(View.VISIBLE);
             carColorInputLayout.setVisibility(View.VISIBLE);
@@ -219,7 +204,6 @@ public class RegistrationActivity extends AppCompatActivity {
             constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.car_color_input_layout, ConstraintSet.BOTTOM,20);
             constraintSet.applyTo(constraintLayout);
         }else{
-            Toast.makeText(getApplicationContext(), "Enter ca<z", Toast.LENGTH_SHORT).show();
             carModelTxt.setVisibility(View.GONE);
             carPlateTxt.setVisibility(View.GONE);
             carColorInputLayout.setVisibility(View.GONE);
@@ -231,12 +215,22 @@ public class RegistrationActivity extends AppCompatActivity {
         }
     }
 
-    private void writeNewUser(User user){
+    private void saveNewUserData(String name, String surname, String phone){
+        User user = new User(name, surname, phone);
+        if(carSwitch.isChecked()){
+            String model = String.valueOf(carModelTxt.getText());
+            String plate = String.valueOf(carPlateTxt.getText()).toUpperCase();
+            String color = String.valueOf(carColorTxt.getText());
+            Car car = new Car(model, plate, color);
+            user.setCar(car);
+            user.setCarOwner(true);
+        }
+
         String key = dbReference.child("user").push().getKey();
         Map<String, Object> userValues = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        //one put -> one update in a different table
+        //one row -> one update in a different table with this data
         childUpdates.put("/user/" + key, userValues);
         //es. childUpdates.put("/ride/organizers" + key, userValues);
 

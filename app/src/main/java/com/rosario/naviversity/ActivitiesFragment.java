@@ -38,9 +38,19 @@ public class ActivitiesFragment extends Fragment {
         RecyclerView recyclerView = view.findViewById(R.id.mRecyclerView);
 
         Place start = new Place();
-        start.setName("ciao");
+        Car car = new Car("Fiat Panda", "XXXXXXX", "Arancione");
+
+        start.setName("Dipartimento di Economia e Impresa");
         Ride r1 = new Ride(start, start, "ciao", "ciao", "ciao");
+        r1.setCar(car);
+        r1.setOwner("4/5");
         Ride r2 = new Ride(start, start, "ciao", "ciao", "ciao");
+        r2.setOwner("5/5");
+        r2.setCar(car);
+        r1.setDate("21/12/2023");
+        r2.setDate("21/12/2023");
+        r1.setTime("12:00");
+        r2.setTime("15:30");
         listRides.add(r1);
         listRides.add(r2);
 

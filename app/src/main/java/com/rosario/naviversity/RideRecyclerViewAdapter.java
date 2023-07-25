@@ -30,9 +30,28 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
     @Override
     public void onBindViewHolder(@NonNull RideRecyclerViewAdapter.MyViewHolder holder, int position) {
-        holder.textView1.setText(listRides.get(position).getStart().getName());
-        holder.textView2.setText(listRides.get(position).getStop().getName());
-        holder.textView3.setText(listRides.get(position).getTime());
+        Ride ride = listRides.get(position);
+        String startName = ride.getStart().getName();
+        String stopName = ride.getStop().getName();
+        //String owner = ride.getOwner();
+        Car car = ride.getCar();
+        String time = ride.getTime();
+        String date = ride.getDate();
+
+        if(isDepartment(startName)){
+            startName = trucateString(startName, 20);
+        }
+        if(isDepartment(stopName)){
+            stopName = trucateString(stopName, 20);
+        }
+
+
+        holder.startStopTxt.setText(startName +" - " + stopName);
+        //holder.ownerTxt.setText(owner);
+        holder.carTxt.setText(car.getModel() + " " + car.getColor() + " (" + car.getPlate() + ")");
+        holder.dateTxt.setText(date);
+        holder.timeTxt.setText(time);
+        //holder.textView3.setText(listRides.get(position).getTime());
     }
 
     @Override
@@ -41,16 +60,36 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
-        TextView textView1;
-        TextView textView2;
-        TextView textView3;
+        TextView startStopTxt;
+        TextView ownerTxt;
+        TextView carTxt;
+        TextView dateTxt;
+        TextView timeTxt;
 
         public MyViewHolder(@NonNull View itemView){
             super(itemView);
 
-            textView1 = itemView.findViewById(R.id.textView);
-            textView2 = itemView.findViewById(R.id.textView2);
-            textView3 = itemView.findViewById(R.id.textView3);
+            startStopTxt = itemView.findViewById(R.id.start_stop_txt);
+            //ownerTxt = itemView.findViewById(R.id.ride_owner_txt);
+            carTxt = itemView.findViewById(R.id.ride_car_txt);
+            dateTxt = itemView.findViewById(R.id.ride_date_txt);
+            timeTxt = itemView.findViewById(R.id.ride_time_txt);
+            //textView3 = itemView.findViewById(R.id.textView3);
         }
+    }
+
+
+    public String trucateString(String input, int maxLength) {
+        if (input.length() <= maxLength)
+            return input;
+        else
+            return input.substring(0, 3) + "." + input.substring(15);
+    }
+
+    public boolean isDepartment(String input){
+        if(input.substring(0, 12).equals("Dipartimento")){
+            return true;
+        }
+        return false;
     }
 }
