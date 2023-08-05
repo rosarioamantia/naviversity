@@ -11,6 +11,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -35,6 +36,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -74,11 +77,9 @@ public class MapsFragment extends Fragment {
     FirebaseDatabase mDatabase;
     DatabaseReference rideReference;
     Ride ride;
-    List<String> listMembers;
-    String rideId;
     BottomSheetDialog dialog;
     FirebaseAuth mAuth;
-
+    DatabaseReference dbReference;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
@@ -89,22 +90,11 @@ public class MapsFragment extends Fragment {
                     mark.hideInfoWindow();
                     View confirmRideView = getLayoutInflater().inflate(R.layout.confirm_ride_dialog, null, false);
                     createDialog(confirmRideView);
-
                     Button btnConfirm = confirmRideView.findViewById(R.id.btnConfirm);
                     btnConfirm.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            rideReference.child(ride.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    updateRideMembers(ride);
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                }
-                            });
+                            updateRideMembers(ride);
                             dialog.dismiss();
                         }
                     });
@@ -118,7 +108,7 @@ public class MapsFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     //agisci qui per gestire più ride e proporle (limit to first)
-                    rideReference.limitToFirst(1).addListenerForSingleValueEvent(new ValueEventListener() {
+                    rideReference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             for(DataSnapshot ds : snapshot.getChildren()){
@@ -140,12 +130,10 @@ public class MapsFragment extends Fragment {
                                         mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
                                         mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore: " + ride.getOwner());
                                         mark.showInfoWindow();
-
                                         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
                                     }
                                 }
                             }
-
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
@@ -156,7 +144,6 @@ public class MapsFragment extends Fragment {
             });
         }
     };
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -178,8 +165,9 @@ public class MapsFragment extends Fragment {
         startSpinner.setAdapter(startAdapter);
         stopSpinner.setAdapter(stopAdapter);
         placeReference = mDatabase.getReference("place");
+        dbReference = mDatabase.getReference();
         rideReference = mDatabase.getReference("ride");
-        //mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -235,7 +223,6 @@ public class MapsFragment extends Fragment {
                 return false;
             }
         });
-
         stopSpinner.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -261,7 +248,6 @@ public class MapsFragment extends Fragment {
         });
         return view;
     }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -271,26 +257,23 @@ public class MapsFragment extends Fragment {
             mapFragment.getMapAsync(callback);
         }
     }
-
     private void createDialog(View v){
         fillDialogData(v);
         dialog.setContentView(v);
         dialog.show();
     }
-
     private void fillDialogData(View v){
         TextView owner = v.findViewById(R.id.rideOwner);
         TextView start = v.findViewById(R.id.rideStart);
         TextView stop = v.findViewById(R.id.rideStop);
         TextView date = v.findViewById(R.id.rideDate);
         TextView time = v.findViewById(R.id.rideTime);
-        owner.setText(ride.getOwner());
+        owner.setText(ride.getOwner().getName());
         start.setText(ride.getStart().getName());
         stop.setText(ride.getStop().getName());
         date.setText(ride.getDate());
         time.setText(ride.getTime());
     }
-
     public boolean isTimeElegible(String pickerTime, String rideTime){
         LocalTime superiorLimit = LocalTime.parse(pickerTime).plus(31, ChronoUnit.MINUTES);
         LocalTime inferiorLimit = LocalTime.parse(pickerTime).minus(31, ChronoUnit.MINUTES);
@@ -301,20 +284,30 @@ public class MapsFragment extends Fragment {
         }
         return false;
     }
-
     public void updateRideMembers(Ride ride){
-        String actualUser = "idNuovoOle";
-        if(ride.getMembers() != null){
-            ride.getMembers().add(actualUser);
-        }else{
-            List<String> firstMemberList = new ArrayList<String>();
-            firstMemberList.add(actualUser);
-            ride.setMembers(firstMemberList);
-        }
-        Map<String, Object> rideValues = ride.toMap();
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put(ride.getId(), rideValues);
-        rideReference.updateChildren(childUpdates);
-        Toast.makeText(getContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
+        String actualUserId = mAuth.getCurrentUser().getUid();
+        dbReference.child("user").child(actualUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                User user = snapshot.getValue(User.class);
+                HashMap<String, User> members = ride.getMembers();
+                if(members == null){
+                    members = new HashMap<>();
+                }
+                members.put(actualUserId, user);
+                ride.setMembers(members);
+                Map<String, Object> rideValues = ride.toMap();
+                Map<String, Object> childUpdates = new HashMap<>();
+                childUpdates.put("/ride/" + ride.getId(), rideValues);
+                childUpdates.put("/user/" + actualUserId + "/rides/" + ride.getId(), rideValues);
+                // TODO sistema in modo che members non venga salvato in User/rides
+                dbReference.updateChildren(childUpdates);
+                Toast.makeText(getContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 }

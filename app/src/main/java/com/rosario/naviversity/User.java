@@ -10,7 +10,7 @@ public class User implements Serializable {
     private String name;
     private String surname;
     private String phone;
-    private boolean isCarOwner = false;
+    private boolean carOwner = false;
     private Car car = null;
 
     public User(String name, String surname, String phone){
@@ -18,6 +18,8 @@ public class User implements Serializable {
         this.surname = surname;
         this.phone = phone;
     }
+
+    public User(){}
 
     public String getPhone() {
         return phone;
@@ -44,11 +46,11 @@ public class User implements Serializable {
     }
 
     public boolean isCarOwner() {
-        return isCarOwner;
+        return carOwner;
     }
 
     public void setCarOwner(boolean carOwner) {
-        isCarOwner = carOwner;
+        this.carOwner = carOwner;
     }
     public Car getCar() {
         return car;
@@ -64,7 +66,7 @@ public class User implements Serializable {
         result.put("name", name);
         result.put("surname", surname);
         result.put("phone", phone);
-        result.put("isCarOwner", isCarOwner);
+        result.put("carOwner", carOwner);
         result.put("car", car);
         return result;
     }

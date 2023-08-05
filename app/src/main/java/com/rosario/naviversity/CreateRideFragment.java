@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -44,6 +45,7 @@ import java.util.Map;
 public class CreateRideFragment extends Fragment {
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
+    FirebaseAuth mAuth;
     List<Place> listStart;
     List<Place> listStop;
     Place start;
@@ -54,6 +56,7 @@ public class CreateRideFragment extends Fragment {
     TimePickerDialog timePicker;
     TextInputEditText dateText;
     Button btnConfirm;
+    User user;
 
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
@@ -90,8 +93,21 @@ public class CreateRideFragment extends Fragment {
 
         mDatabase = FirebaseDatabase.getInstance();
         dbReference = mDatabase.getReference();
+        mAuth = FirebaseAuth.getInstance();
         listStart = new ArrayList<Place>();
         listStop = new ArrayList<Place>();
+
+        dbReference.child("user").child(mAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                user = snapshot.getValue(User.class);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         return view;
     }
@@ -212,7 +228,12 @@ public class CreateRideFragment extends Fragment {
                     TextInputLayout t = confirmRideCreationView.findViewById(R.id.dateInputLayout);
                     t.setError("Deve essere selezionata una data");
                 }else{
-                    writeNewRide();
+                    if(user.isCarOwner()){
+                        writeNewRide();
+                    }else{
+                        Toast.makeText(getContext(), "prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
+                    }
+
                 }
             }
         });
@@ -229,7 +250,7 @@ public class CreateRideFragment extends Fragment {
 
     private void writeNewRide(){
         String key = dbReference.child("ride").push().getKey();
-        Ride ride = new Ride(start, stop, "idUtenteLoggato", dateText.getText().toString(), timeText.getText().toString());
+        Ride ride = new Ride(start, stop, user, dateText.getText().toString(), timeText.getText().toString());
         Map<String, Object> rideValues = ride.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 

@@ -162,7 +162,7 @@ public class RegistrationActivity extends AppCompatActivity {
                             phone = String.valueOf(editTextPhone.getText());
 
                             FirebaseUser fUser = mAuth.getCurrentUser();
-                            saveNewUserData(name, surname, phone);
+                            saveNewUserData(name, surname, phone, fUser);
 
                             fUser.sendEmailVerification()
                                     .addOnCompleteListener(emailTask -> {
@@ -215,7 +215,7 @@ public class RegistrationActivity extends AppCompatActivity {
         }
     }
 
-    private void saveNewUserData(String name, String surname, String phone){
+    private void saveNewUserData(String name, String surname, String phone, FirebaseUser fUser){
         User user = new User(name, surname, phone);
         if(carSwitch.isChecked()){
             String model = String.valueOf(carModelTxt.getText());
@@ -226,7 +226,7 @@ public class RegistrationActivity extends AppCompatActivity {
             user.setCarOwner(true);
         }
 
-        String key = dbReference.child("user").push().getKey();
+        String key = fUser.getUid();
         Map<String, Object> userValues = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 

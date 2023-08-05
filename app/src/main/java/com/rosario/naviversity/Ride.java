@@ -16,13 +16,13 @@ public class Ride implements Serializable {
     String id;
     Place start;
     Place stop;
-    String owner;
+    User owner;
     String date;
     String time;
-    List<String> members;
-    Car car;
+    HashMap<String, User> members;
+    boolean completed = false;
 
-    public Ride(Place start, Place stop, String owner, String date, String time){
+    public Ride(Place start, Place stop, User owner, String date, String time){
         this.start = start;
         this.stop = stop;
         this.owner = owner;
@@ -47,11 +47,11 @@ public class Ride implements Serializable {
         this.stop = stop;
     }
 
-    public String getOwner() {
+    public User getOwner() {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public void setOwner(User owner) {
         this.owner = owner;
     }
 
@@ -71,11 +71,11 @@ public class Ride implements Serializable {
         this.time = time;
     }
 
-    public List<String> getMembers() {
+    public HashMap<String, User> getMembers() {
         return members;
     }
 
-    public void setMembers(List<String> members) {
+    public void setMembers(HashMap<String, User> members) {
         this.members = members;
     }
 
@@ -87,12 +87,12 @@ public class Ride implements Serializable {
         this.id = id;
     }
 
-    public Car getCar() {
-        return car;
+    public boolean isCompleted() {
+        return completed;
     }
 
-    public void setCar(Car car) {
-        this.car = car;
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     @Exclude
@@ -104,6 +104,7 @@ public class Ride implements Serializable {
         result.put("date", date);
         result.put("time", time);
         result.put("members", members);
+        result.put("completed", completed);
 
         return result;
     }
