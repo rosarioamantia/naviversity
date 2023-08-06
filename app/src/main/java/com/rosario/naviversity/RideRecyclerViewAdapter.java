@@ -149,9 +149,8 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
                 ConstraintSet constraintSet = new ConstraintSet();
                 constraintSet.clone(constraintLayout);
-                constraintSet.connect(R.id.date_icon, ConstraintSet.BOTTOM, R.id.date_icon, ConstraintSet.BOTTOM, 20);
+                constraintSet.connect(R.id.date_icon, ConstraintSet.BOTTOM, R.id.card_layout, ConstraintSet.BOTTOM, 20);
                 constraintSet.applyTo(constraintLayout);
-                constraintLayout.forceLayout();
 
                 /*ViewGroup.LayoutParams layoutParams = holder.itemView.findViewById(R.id.card_layout).getLayoutParams();
                 layoutParams.height = 320;
