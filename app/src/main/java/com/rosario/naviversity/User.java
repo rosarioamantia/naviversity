@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class User implements Serializable {
+    private String id;
     private String name;
     private String surname;
     private String phone;
@@ -58,6 +59,14 @@ public class User implements Serializable {
 
     public void setCar(Car car) {
         this.car = car;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Exclude

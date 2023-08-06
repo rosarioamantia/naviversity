@@ -194,6 +194,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
     public void switchCarDetailsVisibility(boolean checked){
         if(checked){
+            //TODO sistema duplicati
             carModelTxt.setVisibility(View.VISIBLE);
             carPlateTxt.setVisibility(View.VISIBLE);
             carColorInputLayout.setVisibility(View.VISIBLE);

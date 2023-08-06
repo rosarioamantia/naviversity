@@ -50,7 +50,7 @@ public class ActivitiesFragment extends Fragment {
         dbReference = mDatabase.getReference();
         mAuth = FirebaseAuth.getInstance();
         actualUserId = mAuth.getUid();
-        RideRecyclerViewAdapter adapter = new RideRecyclerViewAdapter(getContext(), listRides);
+        RideRecyclerViewAdapter adapter = new RideRecyclerViewAdapter(getContext(), listRides, actualUserId);
         RecyclerView recyclerView = view.findViewById(R.id.mRecyclerView);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -63,7 +63,7 @@ public class ActivitiesFragment extends Fragment {
                     ride.setId(child.getKey());
                     HashMap<String, User> rideMembers = ride.getMembers();
 
-                    if(rideMembers != null && rideMembers.get(actualUserId) != null){
+                    if(rideMembers.get(actualUserId) != null){
                         listRides.add(ride);
                     }
 

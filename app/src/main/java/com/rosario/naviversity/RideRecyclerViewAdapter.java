@@ -9,12 +9,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.view.menu.MenuView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.constraintlayout.widget.Constraints;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,13 +34,15 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
     Context context;
     ArrayList<Ride> listRides;
+    String currentUserId;
     FirebaseAuth mAuth;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
 
-    public RideRecyclerViewAdapter(Context context, ArrayList<Ride> listRides){
+    public RideRecyclerViewAdapter(Context context, ArrayList<Ride> listRides, String currentUserId){
         this.context = context;
         this.listRides = listRides;
+        this.currentUserId = currentUserId;
     }
 
     @NonNull
@@ -40,6 +53,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         mDatabase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
         dbReference = mDatabase.getReference();
+
         return new RideRecyclerViewAdapter.MyViewHolder(view);
     }
 
@@ -48,44 +62,23 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         Ride ride = listRides.get(position);
         String startName = ride.getStart().getName();
         String stopName = ride.getStop().getName();
-        Car car = ride.getOwner().getCar();
+        Car car = ride.getCar();
+        String carModel = car.getModel();
+        String carColor = car.getColor();
+        String carPlate = car.getPlate();
         String time = ride.getTime();
         String date = ride.getDate();
-        String currentUserId = mAuth.getUid();
 
-        //TODO cancella start
-        if(isDepartment(startName)){
-            startName = trucateString(startName, 20);
-        }
         if(isDepartment(stopName)){
             stopName = trucateString(stopName, 20);
         }
-
         holder.startTxt.setText(startName);
         holder.stopTxt.setText(stopName);
-        holder.carTxt.setText(car.getModel() + " " + car.getColor() + " (" + car.getPlate() + ")");
+        holder.carTxt.setText(carModel + " " + carColor + " (" + carPlate + ")");
         holder.dateTxt.setText(date);
         holder.timeTxt.setText(time);
-        holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(context.getApplicationContext(), "Premuto " + time, Toast.LENGTH_SHORT).show();
-                Map<String, Object> childUpdates = new HashMap<>();
-                childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
-                //childUpdates.put("/user/" + currentUserId + "/rides/" + ride.getId(), null);
-                dbReference.updateChildren(childUpdates);
-                listRides.remove(holder.getAdapterPosition());
-                notifyItemRemoved(holder.getAdapterPosition());
-                Toast.makeText(context.getApplicationContext(), "Corsa eliminata", Toast.LENGTH_SHORT).show();
-            }
-        });
 
-        holder.confirmBtn.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-
-            }
-        });
+        initializeButtonsLogic(ride, holder);
     }
 
     @Override
@@ -99,18 +92,17 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         TextView carTxt;
         TextView dateTxt;
         TextView timeTxt;
-        ImageView confirmBtn, deleteBtn;
+        ImageView rateBtn, deleteBtn;
 
         public MyViewHolder(@NonNull View itemView){
             super(itemView);
-
             startTxt = itemView.findViewById(R.id.ride_start_txt);
             stopTxt = itemView.findViewById(R.id.ride_stop_txt);
             carTxt = itemView.findViewById(R.id.ride_car_txt);
             dateTxt = itemView.findViewById(R.id.ride_date_txt);
             timeTxt = itemView.findViewById(R.id.ride_time_txt);
-            confirmBtn = itemView.findViewById(R.id.confirm_btn);
             deleteBtn = itemView.findViewById(R.id.delete_btn);
+            rateBtn = itemView.findViewById(R.id.rate_btn);
         }
     }
 
@@ -126,5 +118,88 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
             return true;
         }
         return false;
+    }
+
+    public boolean isRideHappened(String date, String time){
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+        LocalDate rideDate =  LocalDate.parse(date, dateFormatter);
+        LocalTime rideTime = LocalTime.parse(time);
+        LocalDate actualDate = LocalDate.now();
+        LocalTime actualTime = LocalTime.now();
+        if(actualDate.isAfter(rideDate) && actualTime.isAfter(rideTime)){
+            return true;
+        }
+        return false;
+    }
+    public boolean currentUserIsRideOwner(String currentUserId , String rideOwnerId){
+        return currentUserId.equals(rideOwnerId);
+    }
+    public void initializeButtonsLogic(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
+        String rideOwnerId = ride.getOwner();
+        String time = ride.getTime();
+        String date = ride.getDate();
+
+        if(isRideHappened(date, time)){
+            holder.deleteBtn.setVisibility(View.GONE);
+            if(currentUserIsRideOwner(currentUserId, rideOwnerId)){
+                holder.rateBtn.setVisibility(View.GONE);
+                ConstraintLayout constraintLayout = holder.itemView.findViewById(R.id.card_layout);
+                System.out.println(constraintLayout.getChildCount());
+                Toast.makeText(context.getApplicationContext(), "constraintLayout", Toast.LENGTH_SHORT).show();
+
+                ConstraintSet constraintSet = new ConstraintSet();
+                constraintSet.clone(constraintLayout);
+                constraintSet.connect(R.id.date_icon, ConstraintSet.BOTTOM, R.id.date_icon, ConstraintSet.BOTTOM, 20);
+                constraintSet.applyTo(constraintLayout);
+                constraintLayout.forceLayout();
+
+                /*ViewGroup.LayoutParams layoutParams = holder.itemView.findViewById(R.id.card_layout).getLayoutParams();
+                layoutParams.height = 320;
+                holder.itemView.findViewById(R.id.card_layout).setLayoutParams(layoutParams);
+                */
+
+            }else{
+                holder.rateBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //fai spuntare finestra per voto
+                        Toast.makeText(context.getApplicationContext(), "Visualizzazione finestra voto", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }else{
+            Map<String, Object> childUpdates = new HashMap<>();
+            if(currentUserIsRideOwner(currentUserId, rideOwnerId)){
+                holder.rateBtn.setVisibility(View.GONE);
+                holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        childUpdates.put("/ride/" + ride.getId(), null);
+                        dbReference.updateChildren(childUpdates);
+                        listRides.remove(holder.getAdapterPosition());
+                        notifyItemRemoved(holder.getAdapterPosition());
+                        Toast.makeText(context.getApplicationContext(), "Corsa eliminata", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }else{
+                holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
+                        dbReference.updateChildren(childUpdates);
+                        listRides.remove(holder.getAdapterPosition());
+                        notifyItemRemoved(holder.getAdapterPosition());
+                        Toast.makeText(context.getApplicationContext(), "Ti sei cancellato dalla corsa", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                holder.rateBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(context.getApplicationContext(), "La corsa deve ancora avvenire", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
     }
 }

@@ -16,18 +16,21 @@ public class Ride implements Serializable {
     String id;
     Place start;
     Place stop;
-    User owner;
+    String owner;
     String date;
     String time;
     HashMap<String, User> members;
     boolean completed = false;
+    Car car;
 
-    public Ride(Place start, Place stop, User owner, String date, String time){
+    public Ride(Place start, Place stop, String owner, String date, String time, Car car, HashMap<String, User> members){
         this.start = start;
         this.stop = stop;
         this.owner = owner;
         this.date = date;
         this.time = time;
+        this.car = car;
+        this.members = members;
     }
     public Ride(){}
 
@@ -47,11 +50,11 @@ public class Ride implements Serializable {
         this.stop = stop;
     }
 
-    public User getOwner() {
+    public String getOwner() {
         return owner;
     }
 
-    public void setOwner(User owner) {
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 
@@ -95,6 +98,14 @@ public class Ride implements Serializable {
         this.completed = completed;
     }
 
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -105,6 +116,7 @@ public class Ride implements Serializable {
         result.put("time", time);
         result.put("members", members);
         result.put("completed", completed);
+        result.put("car", car);
 
         return result;
     }

@@ -101,6 +101,7 @@ public class CreateRideFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 user = snapshot.getValue(User.class);
+                user.setId(snapshot.getKey());
             }
 
             @Override
@@ -250,7 +251,11 @@ public class CreateRideFragment extends Fragment {
 
     private void writeNewRide(){
         String key = dbReference.child("ride").push().getKey();
-        Ride ride = new Ride(start, stop, user, dateText.getText().toString(), timeText.getText().toString());
+        Car car = user.getCar();
+        HashMap<String, User> members = new HashMap<>();
+        members.put(user.getId(), user);
+        Ride ride = new Ride(start, stop, user.getId(), dateText.getText().toString(), timeText.getText().toString(), car, members);
+
         Map<String, Object> rideValues = ride.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 

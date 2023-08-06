@@ -268,7 +268,7 @@ public class MapsFragment extends Fragment {
         TextView stop = v.findViewById(R.id.rideStop);
         TextView date = v.findViewById(R.id.rideDate);
         TextView time = v.findViewById(R.id.rideTime);
-        owner.setText(ride.getOwner().getName());
+        owner.setText(ride.getOwner());
         start.setText(ride.getStart().getName());
         stop.setText(ride.getStop().getName());
         date.setText(ride.getDate());
@@ -291,15 +291,12 @@ public class MapsFragment extends Fragment {
             public void onDataChange(DataSnapshot snapshot) {
                 User user = snapshot.getValue(User.class);
                 HashMap<String, User> members = ride.getMembers();
-                if(members == null){
-                    members = new HashMap<>();
-                }
                 members.put(actualUserId, user);
                 ride.setMembers(members);
                 Map<String, Object> rideValues = ride.toMap();
                 Map<String, Object> childUpdates = new HashMap<>();
                 childUpdates.put("/ride/" + ride.getId(), rideValues);
-                childUpdates.put("/user/" + actualUserId + "/rides/" + ride.getId(), rideValues);
+                //childUpdates.put("/user/" + actualUserId + "/rides/" + ride.getId(), rideValues);
                 // TODO sistema in modo che members non venga salvato in User/rides
                 dbReference.updateChildren(childUpdates);
                 Toast.makeText(getContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
