@@ -13,6 +13,7 @@ public class User implements Serializable {
     private String phone;
     private boolean carOwner = false;
     private Car car = null;
+    private String votedOwner = null;
 
     public User(String name, String surname, String phone){
         this.name = name;
@@ -69,6 +70,14 @@ public class User implements Serializable {
         this.id = id;
     }
 
+    public String getVotedOwner() {
+        return votedOwner;
+    }
+
+    public void setVotedOwner(String votedOwner) {
+        this.votedOwner = votedOwner;
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -77,6 +86,7 @@ public class User implements Serializable {
         result.put("phone", phone);
         result.put("carOwner", carOwner);
         result.put("car", car);
+        result.put("votedOwner", votedOwner);
         return result;
     }
 }

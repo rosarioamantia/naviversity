@@ -33,7 +33,7 @@ public class ActivitiesFragment extends Fragment {
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
     FirebaseAuth mAuth;
-    String actualUserId;
+    User currentUser;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -49,28 +49,42 @@ public class ActivitiesFragment extends Fragment {
         mDatabase = FirebaseDatabase.getInstance();
         dbReference = mDatabase.getReference();
         mAuth = FirebaseAuth.getInstance();
-        actualUserId = mAuth.getUid();
-        RideRecyclerViewAdapter adapter = new RideRecyclerViewAdapter(getContext(), listRides, actualUserId);
-        RecyclerView recyclerView = view.findViewById(R.id.mRecyclerView);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        String currentUserId = mAuth.getUid();
 
-        dbReference.child("ride").addListenerForSingleValueEvent(new ValueEventListener() {
+        dbReference.child("user").child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot child : snapshot.getChildren()){
-                    Ride ride = child.getValue(Ride.class);
-                    ride.setId(child.getKey());
-                    HashMap<String, User> rideMembers = ride.getMembers();
+                currentUser = snapshot.getValue(User.class);
+                currentUser.setId(snapshot.getKey());
+                RideRecyclerViewAdapter adapter = new RideRecyclerViewAdapter(getContext(), listRides, currentUser);
+                RecyclerView recyclerView = view.findViewById(R.id.mRecyclerView);
+                recyclerView.setAdapter(adapter);
+                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                    if(rideMembers.get(actualUserId) != null){
-                        listRides.add(ride);
+                dbReference.child("ride").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for(DataSnapshot child : snapshot.getChildren()){
+                            Ride ride = child.getValue(Ride.class);
+                            ride.setId(child.getKey());
+                            HashMap<String, User> rideMembers = ride.getMembers();
+
+                            if(rideMembers.get(currentUserId) != null){
+                                listRides.add(ride);
+                            }
+
+                            // TODO controllo se è già avvenuta
+                            //if(ride è già avvenuta)
+                        }
+                        adapter.notifyDataSetChanged();
                     }
 
-                    // TODO controllo se è già avvenuta
-                    //if(ride è già avvenuta)
-                }
-                adapter.notifyDataSetChanged();
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
             }
 
             @Override
@@ -78,7 +92,6 @@ public class ActivitiesFragment extends Fragment {
 
             }
         });
-
         return view;
     }
 }

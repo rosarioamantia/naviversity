@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.menu.MenuView;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.constraintlayout.widget.Constraints;
@@ -34,15 +35,15 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
     Context context;
     ArrayList<Ride> listRides;
-    String currentUserId;
+    User currentUser;
     FirebaseAuth mAuth;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
 
-    public RideRecyclerViewAdapter(Context context, ArrayList<Ride> listRides, String currentUserId){
+    public RideRecyclerViewAdapter(Context context, ArrayList<Ride> listRides, User currentUser){
         this.context = context;
         this.listRides = listRides;
-        this.currentUserId = currentUserId;
+        this.currentUser = currentUser;
     }
 
     @NonNull
@@ -53,7 +54,6 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         mDatabase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
         dbReference = mDatabase.getReference();
-
         return new RideRecyclerViewAdapter.MyViewHolder(view);
     }
 
@@ -77,8 +77,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         holder.carTxt.setText(carModel + " " + carColor + " (" + carPlate + ")");
         holder.dateTxt.setText(date);
         holder.timeTxt.setText(time);
-
-        initializeButtonsLogic(ride, holder);
+        setButtonsShowing(ride, holder);
     }
 
     @Override
@@ -93,6 +92,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         TextView dateTxt;
         TextView timeTxt;
         ImageView rateBtn, deleteBtn;
+        CardView rateCard;
 
         public MyViewHolder(@NonNull View itemView){
             super(itemView);
@@ -103,43 +103,31 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
             timeTxt = itemView.findViewById(R.id.ride_time_txt);
             deleteBtn = itemView.findViewById(R.id.delete_btn);
             rateBtn = itemView.findViewById(R.id.rate_btn);
+            rateCard = itemView.findViewById(R.id.rate_card);
         }
     }
-
-    public String trucateString(String input, int maxLength) {
-        if (input.length() <= maxLength)
-            return input;
-        else
-            return input.substring(0, 3) + "." + input.substring(15);
-    }
-
-    public boolean isDepartment(String input){
-        if(input.substring(0, 12).equals("Dipartimento")){
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isRideHappened(String date, String time){
+    public boolean isRidePassed(String date, String time){
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
         LocalDate rideDate =  LocalDate.parse(date, dateFormatter);
         LocalTime rideTime = LocalTime.parse(time);
         LocalDate actualDate = LocalDate.now();
         LocalTime actualTime = LocalTime.now();
-        if(actualDate.isAfter(rideDate) && actualTime.isAfter(rideTime)){
+        if(actualDate.isAfter(rideDate)) {
             return true;
+        }else if(actualDate.isEqual(rideDate)){
+            if(actualTime.isAfter(rideTime)) {
+                return true;
+            }
         }
         return false;
     }
-    public boolean currentUserIsRideOwner(String currentUserId , String rideOwnerId){
-        return currentUserId.equals(rideOwnerId);
-    }
-    public void initializeButtonsLogic(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
+    public void setButtonsShowing(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
         String rideOwnerId = ride.getOwner();
-        String time = ride.getTime();
-        String date = ride.getDate();
+        String currentUserId = currentUser.getId();
+        String rideTime = ride.getTime();
+        String rideDate = ride.getDate();
 
-        if(isRideHappened(date, time)){
+        if(isRidePassed(rideDate, rideTime)){
             holder.deleteBtn.setVisibility(View.GONE);
             if(currentUserIsRideOwner(currentUserId, rideOwnerId)){
                 holder.rateBtn.setVisibility(View.GONE);
@@ -156,12 +144,16 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                 layoutParams.height = 320;
                 holder.itemView.findViewById(R.id.card_layout).setLayoutParams(layoutParams);
                 */
-
-            }else{
+            }else if(currentUserAlreadyVoted()) {
+                holder.rateBtn.setVisibility(View.GONE);
+            }
+            else{
                 holder.rateBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        //fai spuntare finestra per voto
+                        //fai spuntare finestra per voto con card
+                        holder.rateCard.setVisibility(View.VISIBLE);
+
                         Toast.makeText(context.getApplicationContext(), "Visualizzazione finestra voto", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -200,5 +192,26 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                 });
             }
         }
+    }
+    public boolean currentUserAlreadyVoted(){
+        String currentUserVote = currentUser.getVotedOwner();
+        if(currentUserVote.equals("true"))
+            return true;
+        return false;
+    }
+    public boolean currentUserIsRideOwner(String currentUserId , String rideOwnerId){
+        return currentUserId.equals(rideOwnerId);
+    }
+    public String trucateString(String input, int maxLength) {
+        if (input.length() <= maxLength)
+            return input;
+        else
+            return input.substring(0, 3) + "." + input.substring(15);
+    }
+    public boolean isDepartment(String input){
+        if(input.substring(0, 12).equals("Dipartimento")){
+            return true;
+        }
+        return false;
     }
 }

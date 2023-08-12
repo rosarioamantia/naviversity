@@ -229,12 +229,12 @@ public class CreateRideFragment extends Fragment {
                     TextInputLayout t = confirmRideCreationView.findViewById(R.id.dateInputLayout);
                     t.setError("Deve essere selezionata una data");
                 }else{
-                    if(user.isCarOwner()){
+                    // TODO aggiungi con gestione eccezioni
+                    if(user != null && user.isCarOwner()){
                         writeNewRide();
                     }else{
                         Toast.makeText(getContext(), "prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                     }
-
                 }
             }
         });

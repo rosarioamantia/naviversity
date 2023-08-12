@@ -290,6 +290,7 @@ public class MapsFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 User user = snapshot.getValue(User.class);
+                user.setVotedOwner("false");
                 HashMap<String, User> members = ride.getMembers();
                 members.put(actualUserId, user);
                 ride.setMembers(members);
