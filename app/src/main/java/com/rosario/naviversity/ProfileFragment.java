@@ -71,7 +71,7 @@ public class ProfileFragment extends Fragment {
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-            currentUser.delete();
+            mAuth.getInstance().signOut();
             Toast.makeText(getContext(), "Utente logout ", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getContext(), MainActivity.class);
             startActivity(intent);

@@ -14,6 +14,8 @@ public class User implements Serializable {
     private boolean carOwner = false;
     private Car car = null;
     private String votedOwner = null;
+    private int ratingReceived = 0;
+    private int score = 0;
 
     public User(String name, String surname, String phone){
         this.name = name;
@@ -78,6 +80,22 @@ public class User implements Serializable {
         this.votedOwner = votedOwner;
     }
 
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public int getRatingReceived() {
+        return ratingReceived;
+    }
+
+    public void setRatingReceived(int ratingReceived) {
+        this.ratingReceived = ratingReceived;
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -87,6 +105,8 @@ public class User implements Serializable {
         result.put("carOwner", carOwner);
         result.put("car", car);
         result.put("votedOwner", votedOwner);
+        result.put("score", score);
+        result.put("ratingReceived", ratingReceived);
         return result;
     }
 }

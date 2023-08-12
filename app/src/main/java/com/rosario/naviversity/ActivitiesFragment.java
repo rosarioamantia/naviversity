@@ -33,7 +33,6 @@ public class ActivitiesFragment extends Fragment {
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
     FirebaseAuth mAuth;
-    User currentUser;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -51,40 +50,23 @@ public class ActivitiesFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         String currentUserId = mAuth.getUid();
 
-        dbReference.child("user").child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+        dbReference.child("ride").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                currentUser = snapshot.getValue(User.class);
-                currentUser.setId(snapshot.getKey());
-                RideRecyclerViewAdapter adapter = new RideRecyclerViewAdapter(getContext(), listRides, currentUser);
+                for(DataSnapshot child : snapshot.getChildren()){
+                    Ride ride = child.getValue(Ride.class);
+                    ride.setId(child.getKey());
+                    HashMap<String, User> rideMembers = ride.getMembers();
+
+                    if(rideMembers.get(currentUserId) != null){
+                        listRides.add(ride);
+                    }
+                }
+                RideRecyclerViewAdapter adapter = new RideRecyclerViewAdapter(getContext(), listRides, currentUserId);
                 RecyclerView recyclerView = view.findViewById(R.id.mRecyclerView);
                 recyclerView.setAdapter(adapter);
                 recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-                dbReference.child("ride").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for(DataSnapshot child : snapshot.getChildren()){
-                            Ride ride = child.getValue(Ride.class);
-                            ride.setId(child.getKey());
-                            HashMap<String, User> rideMembers = ride.getMembers();
-
-                            if(rideMembers.get(currentUserId) != null){
-                                listRides.add(ride);
-                            }
-
-                            // TODO controllo se è già avvenuta
-                            //if(ride è già avvenuta)
-                        }
-                        adapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-
+                adapter.notifyDataSetChanged();
             }
 
             @Override

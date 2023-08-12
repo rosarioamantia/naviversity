@@ -4,7 +4,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,15 +37,14 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
     Context context;
     ArrayList<Ride> listRides;
-    User currentUser;
-    FirebaseAuth mAuth;
+    String currentUserId;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
 
-    public RideRecyclerViewAdapter(Context context, ArrayList<Ride> listRides, User currentUser){
+    public RideRecyclerViewAdapter(Context context, ArrayList<Ride> listRides, String currentUserId){
         this.context = context;
         this.listRides = listRides;
-        this.currentUser = currentUser;
+        this.currentUserId = currentUserId;
     }
 
     @NonNull
@@ -52,7 +53,6 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.recycler_view_row, parent, false);
         mDatabase = FirebaseDatabase.getInstance();
-        mAuth = FirebaseAuth.getInstance();
         dbReference = mDatabase.getReference();
         return new RideRecyclerViewAdapter.MyViewHolder(view);
     }
@@ -77,7 +77,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         holder.carTxt.setText(carModel + " " + carColor + " (" + carPlate + ")");
         holder.dateTxt.setText(date);
         holder.timeTxt.setText(time);
-        setButtonsShowing(ride, holder);
+        initializeButtons(ride, holder);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         TextView dateTxt;
         TextView timeTxt;
         ImageView rateBtn, deleteBtn;
-        CardView rateCard;
+        //CardView rateCard;
 
         public MyViewHolder(@NonNull View itemView){
             super(itemView);
@@ -103,27 +103,12 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
             timeTxt = itemView.findViewById(R.id.ride_time_txt);
             deleteBtn = itemView.findViewById(R.id.delete_btn);
             rateBtn = itemView.findViewById(R.id.rate_btn);
-            rateCard = itemView.findViewById(R.id.rate_card);
+            //rateCard = itemView.get (R.id.rate_card);
+            //lo puoi gestire tutto qui forse, basta usare itemView.getRootView
         }
     }
-    public boolean isRidePassed(String date, String time){
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
-        LocalDate rideDate =  LocalDate.parse(date, dateFormatter);
-        LocalTime rideTime = LocalTime.parse(time);
-        LocalDate actualDate = LocalDate.now();
-        LocalTime actualTime = LocalTime.now();
-        if(actualDate.isAfter(rideDate)) {
-            return true;
-        }else if(actualDate.isEqual(rideDate)){
-            if(actualTime.isAfter(rideTime)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    public void setButtonsShowing(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
+    public void initializeButtons(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
         String rideOwnerId = ride.getOwner();
-        String currentUserId = currentUser.getId();
         String rideTime = ride.getTime();
         String rideDate = ride.getDate();
 
@@ -144,17 +129,15 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                 layoutParams.height = 320;
                 holder.itemView.findViewById(R.id.card_layout).setLayoutParams(layoutParams);
                 */
-            }else if(currentUserAlreadyVoted()) {
+            }else if(currentUserAlreadyVoted(ride)) {
                 holder.rateBtn.setVisibility(View.GONE);
             }
             else{
                 holder.rateBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        //fai spuntare finestra per voto con card
-                        holder.rateCard.setVisibility(View.VISIBLE);
-
-                        Toast.makeText(context.getApplicationContext(), "Visualizzazione finestra voto", Toast.LENGTH_SHORT).show();
+                        //initializeRatingCard(view, ride, holder);
+                        initializeRatingCard(ride, holder);
                     }
                 });
             }
@@ -193,11 +176,68 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
             }
         }
     }
-    public boolean currentUserAlreadyVoted(){
-        String currentUserVote = currentUser.getVotedOwner();
-        if(currentUserVote.equals("true"))
+    public void initializeRatingCard(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
+        View rootView = holder.itemView.getRootView();
+        Button confirmBtn = rootView.findViewById(R.id.rate_btn);
+        CardView rateCard = rootView.findViewById(R.id.rate_card);
+        String RideOwnerId = ride.getOwner();
+
+        rateCard.setVisibility(View.VISIBLE);
+        RatingBar ratingBar = rateCard.findViewById(R.id.rating_bar);
+        confirmBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(context.getApplicationContext(), "grazie per il feedback", Toast.LENGTH_SHORT).show();
+                dbReference.child("user").child(RideOwnerId).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        User user = snapshot.getValue(User.class);
+                        int rideScore = (int) ratingBar.getRating();
+                        int ratingReceived = user.getRatingReceived();
+                        ratingReceived = ratingReceived + 1;
+                        int actualScore = user.getScore();
+                        int newScore = actualScore + rideScore;
+                        user.setScore(newScore);
+                        user.setRatingReceived(ratingReceived);
+
+                        Map<String, Object> userValues = user.toMap();
+                        Map<String, Object> childUpdates = new HashMap<>();
+
+                        childUpdates.put("/user/" + RideOwnerId, userValues);
+                        childUpdates.put("/ride/" + ride.getId() + "/members/" + RideOwnerId, userValues);
+                        childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId + "/votedOwner/", "true");
+
+                        dbReference.updateChildren(childUpdates);
+                        rateCard.setVisibility(View.GONE);
+                        holder.rateBtn.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+        });
+    }
+    public boolean isRidePassed(String date, String time){
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+        LocalDate rideDate =  LocalDate.parse(date, dateFormatter);
+        LocalTime rideTime = LocalTime.parse(time);
+        LocalDate actualDate = LocalDate.now();
+        LocalTime actualTime = LocalTime.now();
+        if(actualDate.isAfter(rideDate)) {
             return true;
+        }else if(actualDate.isEqual(rideDate)){
+            if(actualTime.isAfter(rideTime)) {
+                return true;
+            }
+        }
         return false;
+    }
+    public boolean currentUserAlreadyVoted(Ride ride){
+        User currentUser = ride.getMembers().get(currentUserId);
+        return currentUser.getVotedOwner().equals("true");
     }
     public boolean currentUserIsRideOwner(String currentUserId , String rideOwnerId){
         return currentUserId.equals(rideOwnerId);
