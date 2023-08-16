@@ -43,68 +43,53 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/startLayout"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                app:layout_constraintTop_toBottomOf="@+id/loginText"
-                tools:layout_editor_absoluteX="24dp">
-
-                <TextView
-                    android:id="@+id/startTxt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Partenza"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/startSpinner"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/startSpinner" />
-
-                <Spinner
-                    android:id="@+id/startSpinner"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="right"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    tools:layout_editor_absoluteX="24dp" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/stopLayout"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                app:layout_constraintTop_toBottomOf="@+id/startLayout">
-
-                <TextView
-                    android:id="@+id/stopTxt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Fermata"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/stopSpinner"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/stopSpinner" />
-
-                <Spinner
-                    android:id="@+id/stopSpinner"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="end"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayout"
-                app:layout_constraintTop_toBottomOf="@+id/stopLayout"
+                android:id="@+id/start_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                tools:layout_editor_absoluteX="24dp">
+                app:layout_constraintBottom_toTopOf="@+id/stop_layout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/loginText">
+
+                <AutoCompleteTextView
+                    android:id="@+id/start_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:hint="Patenza" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/stop_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayout"
+                app:layout_constraintEnd_toEndOf="@+id/start_layout"
+                app:layout_constraintStart_toStartOf="@+id/start_layout"
+                app:layout_constraintTop_toBottomOf="@+id/start_layout">
+
+                <AutoCompleteTextView
+                    android:id="@+id/stop_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:hint="Fermata" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayout3"
+                app:layout_constraintEnd_toEndOf="@+id/start_layout"
+                app:layout_constraintStart_toStartOf="@+id/start_layout"
+                app:layout_constraintTop_toBottomOf="@+id/stop_layout">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/date"
@@ -119,8 +104,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                app:layout_constraintTop_toBottomOf="@+id/textInputLayout"
-                tools:layout_editor_absoluteX="24dp">
+                app:layout_constraintEnd_toEndOf="@+id/start_layout"
+                app:layout_constraintStart_toStartOf="@+id/start_layout"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayout">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/time"

@@ -18,11 +18,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -40,6 +40,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -59,12 +60,12 @@ import java.util.Locale;
 import java.util.Map;
 
 public class MapsFragment extends Fragment {
+    Place start;
+    Place stop;
     Button btnSearch;
     CardView cardSearch;
     List<Place> listStart;
     List<Place> listStop;
-    Spinner startSpinner;
-    Spinner stopSpinner;
     ArrayAdapter<Place> startAdapter;
     ArrayAdapter<Place> stopAdapter;
     DatabaseReference placeReference;
@@ -80,6 +81,8 @@ public class MapsFragment extends Fragment {
     BottomSheetDialog dialog;
     FirebaseAuth mAuth;
     DatabaseReference dbReference;
+    AutoCompleteTextView startTxt;
+    AutoCompleteTextView stopTxt;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
@@ -115,8 +118,7 @@ public class MapsFragment extends Fragment {
                                 ride = ds.getValue(Ride.class);
                                 if(ride != null){
                                     ride.setId(ds.getKey());
-                                    Place start = (Place) startSpinner.getSelectedItem();
-                                    Place stop = (Place) stopSpinner.getSelectedItem();
+                                    //Place stop = (Place) stopSpinner.getSelectedItem();
                                     String pickerDate = dateText.getText().toString();
                                     String pickerTime = timeText.getText().toString();
 
@@ -152,22 +154,60 @@ public class MapsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
         btnSearch = view.findViewById(R.id.btnSearch);
         cardSearch = view.findViewById(R.id.cardSearch);
-        startSpinner = view.findViewById(R.id.startSpinner);
+        //startSpinner = view.findViewById(R.id.startSpinner);
         dateText = view.findViewById(R.id.date);
         timeText = view.findViewById(R.id.time);
-        stopSpinner = view.findViewById(R.id.stopSpinner);
+        //stopSpinner = view.findViewById(R.id.stopSpinner);
         dialog = new BottomSheetDialog(getContext());
         mDatabase = FirebaseDatabase.getInstance();
         listStart = new ArrayList<Place>();
         listStop = new ArrayList<Place>();
         startAdapter = new ArrayAdapter<Place>(getContext(), android.R.layout.simple_spinner_dropdown_item, listStart);
         stopAdapter = new ArrayAdapter<Place>(getContext(), android.R.layout.simple_spinner_dropdown_item, listStop);
-        startSpinner.setAdapter(startAdapter);
-        stopSpinner.setAdapter(stopAdapter);
         placeReference = mDatabase.getReference("place");
         dbReference = mDatabase.getReference();
         rideReference = mDatabase.getReference("ride");
         mAuth = FirebaseAuth.getInstance();
+        startTxt = view.findViewById(R.id.start_txt);
+        stopTxt = view.findViewById(R.id.stop_txt);
+        startTxt.setAdapter(startAdapter);
+        stopTxt.setAdapter(stopAdapter);
+
+        startTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                stop = (Place) adapterView.getItemAtPosition(i);
+            }
+        });
+
+        startTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                start = (Place) adapterView.getItemAtPosition(i);
+            }
+        });
+
+        placeReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                listStart.clear();
+                listStop.clear();
+                for(DataSnapshot child : snapshot.getChildren()){
+                    Place place = child.getValue(Place.class);
+                    if(place.getType().equals("START")){
+                        listStart.add(place);
+                    }else{
+                        listStop.add(place);
+                    }
+                }
+                startAdapter.notifyDataSetChanged();
+                stopAdapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,53 +239,6 @@ public class MapsFragment extends Fragment {
                 timePicker.show();
             }
         });
-
-        startSpinner.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                placeReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        listStart.clear();
-                        for(DataSnapshot child : snapshot.getChildren()){
-                            Place place = child.getValue(Place.class);
-                            if(place.getType().equals("START")){
-                                listStart.add(place);
-                            }
-                        }
-                        startAdapter.notifyDataSetChanged();
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-                return false;
-            }
-        });
-        stopSpinner.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                placeReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        listStop.clear();
-                        for(DataSnapshot child : snapshot.getChildren()){
-                            Place place = child.getValue(Place.class);
-                            if(place.getType().equals("STOP")){
-                                listStop.add(place);
-                            }
-                        }
-                        stopAdapter.notifyDataSetChanged();
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-                return false;
-            }
-        });
         return view;
     }
     @Override
@@ -263,16 +256,23 @@ public class MapsFragment extends Fragment {
         dialog.show();
     }
     private void fillDialogData(View v){
+        String rideOwner = ride.getOwner();
+        String startName = ride.getStart().getName();
+        String stopName = ride.getStop().getName();
+        String rideDate = ride.getDate();
+        String rideTime = ride.getTime();
+
         TextView owner = v.findViewById(R.id.rideOwner);
         TextView start = v.findViewById(R.id.rideStart);
         TextView stop = v.findViewById(R.id.rideStop);
         TextView date = v.findViewById(R.id.rideDate);
         TextView time = v.findViewById(R.id.rideTime);
-        owner.setText(ride.getOwner());
-        start.setText(ride.getStart().getName());
-        stop.setText(ride.getStop().getName());
-        date.setText(ride.getDate());
-        time.setText(ride.getTime());
+
+        owner.setText(rideOwner);
+        start.setText(startName);
+        stop.setText(stopName);
+        date.setText(rideDate);
+        time.setText(rideTime);
     }
     public boolean isTimeElegible(String pickerTime, String rideTime){
         LocalTime superiorLimit = LocalTime.parse(pickerTime).plus(31, ChronoUnit.MINUTES);
