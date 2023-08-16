@@ -3,6 +3,7 @@ package com.rosario.naviversity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -232,6 +233,7 @@ public class CreateRideFragment extends Fragment {
                     // TODO aggiungi con gestione eccezioni
                     if(user != null && user.isCarOwner()){
                         writeNewRide();
+                        dialog.hide();
                     }else{
                         Toast.makeText(getContext(), "prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                     }
@@ -265,6 +267,5 @@ public class CreateRideFragment extends Fragment {
 
         dbReference.updateChildren(childUpdates);
         Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();
-        dialog.hide();
     }
 }
