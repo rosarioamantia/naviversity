@@ -118,7 +118,6 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                 holder.rateBtn.setVisibility(View.GONE);
                 ConstraintLayout constraintLayout = holder.itemView.findViewById(R.id.card_layout);
                 System.out.println(constraintLayout.getChildCount());
-                Toast.makeText(context.getApplicationContext(), "constraintLayout", Toast.LENGTH_SHORT).show();
 
                 ConstraintSet constraintSet = new ConstraintSet();
                 constraintSet.clone(constraintLayout);
