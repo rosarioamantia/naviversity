@@ -17,7 +17,7 @@
     <string name="error_invalid_email">Email non valida</string>
     <string name="error_user_exists">Utente esistente</string>
 
-    <string-array name="my_array">
+    <string-array name="car_colors">
         <item>Rosso</item>
         <item>Nero</item>
         <item>Blu</item>
@@ -26,5 +26,14 @@
         <item>Grigio</item>
         <item>Arancione</item>
         <item>Giallo</item>
+    </string-array>
+
+    <string-array name="car_models">
+        <item>FIAT</item>
+        <item>RENAULT</item>
+        <item>FORD</item>
+        <item>AUDI</item>
+        <item>BMW</item>
+        <item>NISSAN</item>
     </string-array>
 </resources>

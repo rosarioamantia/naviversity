@@ -98,7 +98,7 @@ public class RegistrationActivity extends AppCompatActivity {
         carModelTxt = findViewById(R.id.car_model_txt);
         carPlateTxt = findViewById(R.id.car_plate_txt);
         carColorInputLayout = findViewById(R.id.car_color_input_layout);
-        carColors = getResources().getStringArray(R.array.my_array);
+        carColors = getResources().getStringArray(R.array.car_colors);
         carColorTxt = findViewById(R.id.car_color_txt);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
