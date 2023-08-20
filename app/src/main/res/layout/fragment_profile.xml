@@ -10,6 +10,12 @@
         android:layout_height="match_parent"
         tools:context=".ProfileFragment">
 
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="20dp"/>
+
         <Button
             android:id="@+id/btn_logout"
             android:layout_width="wrap_content"

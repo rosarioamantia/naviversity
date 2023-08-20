@@ -1,6 +1,7 @@
 package com.rosario.naviversity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +61,8 @@ public class ProfileFragment extends Fragment {
     ArrayAdapter<String> carModelsAdapter;
     ArrayAdapter<String> carColorsAdapter;
     TextInputLayout carModelLayout, carPlateLayout, carColorLayout;
+    Uri profileImageUri;
+    ImageView profileImg;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -134,6 +138,8 @@ public class ProfileFragment extends Fragment {
                 androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
                 carModels);
         setUIData(view);
+        profileImageUri = fUser.getPhotoUrl();
+        profileImg = view.findViewById(R.id.profile_image);
         return view;
     }
     public void setUIData(View view){
@@ -161,6 +167,8 @@ public class ProfileFragment extends Fragment {
                     carModelTxt.setAdapter(carModelsAdapter);
                     carColorTxt.setAdapter(carColorsAdapter);
                 }
+
+                profileImg.setImageURI(profileImageUri);
             }
 
             @Override
@@ -173,7 +181,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 mAuth.getInstance().signOut();
-                Toast.makeText(getContext(), "Utente logout ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Utente logout", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getContext(), MainActivity.class);
                 startActivity(intent);
             }

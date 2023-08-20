@@ -1,28 +1,22 @@
 package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.constraintlayout.widget.Constraints;
-
-import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.Switch;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,29 +31,17 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.PhoneAuthCredential;
-import com.google.firebase.auth.PhoneAuthOptions;
-import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.ktx.Firebase;
-
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Calendar;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class RegistrationActivity extends AppCompatActivity {
-
+    private final int PICK_IMAGE_REQUEST = 1;
     Button btnReg;
     TextInputEditText editTextEmail, editTextPassword, editTextName, editTextSurname, editTextPhone;
     FirebaseDatabase mDatabase;
@@ -71,6 +53,9 @@ public class RegistrationActivity extends AppCompatActivity {
     TextInputLayout carColorInputLayout;
     String[] carColors;
     AutoCompleteTextView carColorTxt;
+    StorageReference storageReference;
+    ImageView profileImg;
+    Uri profileImageUri;
 
     @Override
     public void onBackPressed() {
@@ -86,6 +71,7 @@ public class RegistrationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_registration);
         mDatabase = FirebaseDatabase.getInstance();
         dbReference = mDatabase.getReference();
+        storageReference = FirebaseStorage.getInstance().getReference();
         btnReg = this.findViewById(R.id.btn_register);
         editTextEmail = findViewById(R.id.email);
         editTextName = findViewById(R.id.name);
@@ -100,6 +86,7 @@ public class RegistrationActivity extends AppCompatActivity {
         carColorInputLayout = findViewById(R.id.car_color_input_layout);
         carColors = getResources().getStringArray(R.array.car_colors);
         carColorTxt = findViewById(R.id.car_color_txt);
+        profileImg = findViewById(R.id.profile_image);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
@@ -162,6 +149,7 @@ public class RegistrationActivity extends AppCompatActivity {
                             phone = String.valueOf(editTextPhone.getText());
 
                             FirebaseUser fUser = mAuth.getCurrentUser();
+                            updateUserProfileImage(fUser);
                             saveNewUserData(name, surname, phone, fUser);
 
                             fUser.sendEmailVerification()
@@ -189,7 +177,27 @@ public class RegistrationActivity extends AppCompatActivity {
                     }
                 });
             }
+
         });
+
+        profileImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent galleryIntent = new Intent();
+                galleryIntent.setType("image/*");
+                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(galleryIntent, "Seleziona immagine del profilo"), PICK_IMAGE_REQUEST);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            profileImageUri = data.getData();
+            profileImg.setImageURI(profileImageUri);
+        }
     }
 
     public void switchCarDetailsVisibility(boolean checked){
@@ -226,15 +234,29 @@ public class RegistrationActivity extends AppCompatActivity {
             user.setCar(car);
             user.setCarOwner(true);
         }
-
         String key = fUser.getUid();
         Map<String, Object> userValues = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        //one row -> one update in a different table with this data
         childUpdates.put("/user/" + key, userValues);
         //es. childUpdates.put("/ride/organizers" + key, userValues);
 
         dbReference.updateChildren(childUpdates);
     }
+
+    public void updateUserProfileImage(FirebaseUser fUser){
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setPhotoUri(profileImageUri)
+                .build();
+        fUser.updateProfile(profileUpdates);
+
+
+        updateInStorage();
+
+    }
+
+    public void updateInStorage(){
+        storageReference.getRefe
+    }
+
 }
