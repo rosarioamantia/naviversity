@@ -5,12 +5,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -21,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
@@ -36,6 +40,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -53,6 +59,7 @@ public class RegistrationActivity extends AppCompatActivity {
     TextInputLayout carColorInputLayout;
     String[] carColors;
     AutoCompleteTextView carColorTxt;
+    FirebaseStorage firebaseStorage;
     StorageReference storageReference;
     ImageView profileImg;
     Uri profileImageUri;
@@ -71,7 +78,8 @@ public class RegistrationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_registration);
         mDatabase = FirebaseDatabase.getInstance();
         dbReference = mDatabase.getReference();
-        storageReference = FirebaseStorage.getInstance().getReference();
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageReference = firebaseStorage.getReference();
         btnReg = this.findViewById(R.id.btn_register);
         editTextEmail = findViewById(R.id.email);
         editTextName = findViewById(R.id.name);
@@ -249,14 +257,28 @@ public class RegistrationActivity extends AppCompatActivity {
                 .setPhotoUri(profileImageUri)
                 .build();
         fUser.updateProfile(profileUpdates);
-
-
         updateInStorage();
-
     }
 
     public void updateInStorage(){
-        storageReference.getRefe
+        StorageReference fileRef = storageReference.child("/profile_images/" + mAuth.getCurrentUser().getUid());
+        fileRef.putFile(profileImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Toast.makeText(getApplicationContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+
+    public String getFileExtension(Uri uri){
+        ContentResolver cr = getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cr.getType(uri));
     }
 
 }

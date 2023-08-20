@@ -167,8 +167,6 @@ public class ProfileFragment extends Fragment {
                     carModelTxt.setAdapter(carModelsAdapter);
                     carColorTxt.setAdapter(carColorsAdapter);
                 }
-
-                profileImg.setImageURI(profileImageUri);
             }
 
             @Override
