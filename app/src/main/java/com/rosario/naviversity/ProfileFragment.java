@@ -29,11 +29,15 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +67,8 @@ public class ProfileFragment extends Fragment {
     TextInputLayout carModelLayout, carPlateLayout, carColorLayout;
     Uri profileImageUri;
     ImageView profileImg;
+    StorageReference storageReference;
+    FirebaseStorage firebaseStorage;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -140,6 +146,8 @@ public class ProfileFragment extends Fragment {
         setUIData(view);
         profileImageUri = fUser.getPhotoUrl();
         profileImg = view.findViewById(R.id.profile_image);
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageReference = firebaseStorage.getReference();
         return view;
     }
     public void setUIData(View view){
@@ -151,10 +159,15 @@ public class ProfileFragment extends Fragment {
                 userNameTxt.setText(currentUser.getName());
                 userSurnameTxt.setText(currentUser.getSurname());
                 userEmailTxt.setText(fUser.getEmail());
-                float score = currentUser.getScore();
-                int ratingReceived = currentUser.getRatingReceived();
-                float scoreToShow = (float) Math.ceil(score / ratingReceived);
-                ratingBar.setRating(scoreToShow);
+                if(currentUser.isCarOwner()){
+                    ratingBar.setVisibility(View.VISIBLE);
+                    float score = currentUser.getScore();
+                    int ratingReceived = currentUser.getRatingReceived();
+                    float scoreToShow = (float) Math.ceil(score / ratingReceived);
+                    ratingBar.setRating(scoreToShow);
+                }
+
+                setProfleImage();
 
                 if(currentUser.isCarOwner()){
                     carSwitch.setChecked(true);
@@ -189,6 +202,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(b){
+                    btnModify.performClick();
                     carConstraintLayout.setVisibility(View.VISIBLE);
                     carModelTxt.setAdapter(carModelsAdapter);
                     carColorTxt.setAdapter(carColorsAdapter);
@@ -303,5 +317,18 @@ public class ProfileFragment extends Fragment {
             return true;
         }
         return false;
+    }
+
+    public void setProfleImage(){
+        StorageReference fileRef = storageReference.child("/profile_images/" + mAuth.getCurrentUser().getUid());
+        fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                profileImg.setVisibility(View.VISIBLE);
+                //profileImg.setImageURI(uri);
+                Picasso.get().load(uri).into(profileImg);
+                Toast.makeText(getContext(), "Downloaded", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

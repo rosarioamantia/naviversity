@@ -62,7 +62,6 @@ public class MapsFragment extends Fragment {
     TimePickerDialog timePicker;
     TextInputEditText dateText;
     Marker mark;
-    Geocoder geocoder;
     FirebaseDatabase mDatabase;
     DatabaseReference rideReference;
     Ride ride;
@@ -141,10 +140,8 @@ public class MapsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
         btnSearch = view.findViewById(R.id.btnSearch);
         cardSearch = view.findViewById(R.id.cardSearch);
-        //startSpinner = view.findViewById(R.id.startSpinner);
         dateText = view.findViewById(R.id.date);
         timeText = view.findViewById(R.id.time);
-        //stopSpinner = view.findViewById(R.id.stopSpinner);
         dialog = new BottomSheetDialog(getContext());
         mDatabase = FirebaseDatabase.getInstance();
         listStart = new ArrayList<Place>();

@@ -253,14 +253,6 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     public void updateUserProfileImage(FirebaseUser fUser){
-        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                .setPhotoUri(profileImageUri)
-                .build();
-        fUser.updateProfile(profileUpdates);
-        updateInStorage();
-    }
-
-    public void updateInStorage(){
         StorageReference fileRef = storageReference.child("/profile_images/" + mAuth.getCurrentUser().getUid());
         fileRef.putFile(profileImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -268,6 +260,10 @@ public class RegistrationActivity extends AppCompatActivity {
                 fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
+                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                .setPhotoUri(profileImageUri)  //TODO valuta se cambiare con uri parametro (riga sopra)
+                                .build();
+                        fUser.updateProfile(profileUpdates);
                         Toast.makeText(getApplicationContext(), "Uploaded", Toast.LENGTH_SHORT).show();
                     }
                 });
