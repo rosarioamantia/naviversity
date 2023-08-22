@@ -55,10 +55,10 @@ public class RegistrationActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     SwitchMaterial carSwitch;
     TextView logTxt;
-    EditText carModelTxt, carPlateTxt;
-    TextInputLayout carColorInputLayout;
-    String[] carColors;
-    AutoCompleteTextView carColorTxt;
+    EditText carPlateTxt;
+    TextInputLayout carColorInputLayout, carModelInputLayout, carPlateInputLayout;
+    String[] carColors, carModels;
+    AutoCompleteTextView carColorTxt, carModelTxt;
     FirebaseStorage firebaseStorage;
     StorageReference storageReference;
     ImageView profileImg;
@@ -92,14 +92,21 @@ public class RegistrationActivity extends AppCompatActivity {
         carModelTxt = findViewById(R.id.car_model_txt);
         carPlateTxt = findViewById(R.id.car_plate_txt);
         carColorInputLayout = findViewById(R.id.car_color_input_layout);
+        carModelInputLayout = findViewById(R.id.car_model_input_layout);
+        carPlateInputLayout = findViewById(R.id.car_plate_input_layout);
         carColors = getResources().getStringArray(R.array.car_colors);
+        carModels = getResources().getStringArray(R.array.car_models);
         carColorTxt = findViewById(R.id.car_color_txt);
         profileImg = findViewById(R.id.profile_image);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+        ArrayAdapter<String> colorAdapter = new ArrayAdapter<>(this,
                 androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
                         carColors);
-        carColorTxt.setAdapter(adapter);
+        ArrayAdapter<String> modelAdapter = new ArrayAdapter<>(this,
+                androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
+                carModels);
+        carColorTxt.setAdapter(colorAdapter);
+        carModelTxt.setAdapter(modelAdapter);
 
         carSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -120,89 +127,51 @@ public class RegistrationActivity extends AppCompatActivity {
         btnReg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email, password, name, surname, phone;
-                name = String.valueOf(editTextName.getText());
-                surname = String.valueOf(editTextSurname.getText());
-                phone = String.valueOf(editTextPhone.getText());
-                email = String.valueOf(editTextEmail.getText());
-                password = String.valueOf(editTextPassword.getText());
-                String unictRegexPattern = "^[A-Za-z0-9._%+-]+@" + Pattern.quote("studium.unict.it") + "$";
+                if(checkFilledUserValues()){
+                    String email, password;
+                    email = String.valueOf(editTextEmail.getText());
+                    password = String.valueOf(editTextPassword.getText());
 
-                if(TextUtils.isEmpty(email)){
-                    editTextEmail.setError("Inserire un'email");
-                    editTextEmail.requestFocus();
-                    return;
-                }
-                /* SBLOCCA PER CONTROLLARE DOMINIO MAIL
-                else{
-                    if(!email.matches(unictRegexPattern)){
-                        editTextEmail.setError("Inserire un'email unict");
-                        editTextEmail.requestFocus();
-                        return;
-                    }
-                }
-                 */
-                if(TextUtils.isEmpty(password)){
-                    editTextPassword.setError("Inserire una password");
-                    editTextPassword.requestFocus();
-                    return;
-                }
-                if(TextUtils.isEmpty(name)){
-                    editTextName.setError("Inserire un nome");
-                    editTextName.requestFocus();
-                    return;
-                }
-                if(TextUtils.isEmpty(surname)){
-                    editTextSurname.setError("Inserire un cognome");
-                    editTextSurname.requestFocus();
-                    return;
-                }
-                if(TextUtils.isEmpty(phone)){
-                    editTextPhone.setError("Inserire un cellulare");
-                    editTextPhone.requestFocus();
-                    return;
-                }
-
-                mAuth.createUserWithEmailAndPassword(email, password)
+                    mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(RegistrationActivity.this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            String name, surname, phone;
-                            name = String.valueOf(editTextName.getText());
-                            surname = String.valueOf(editTextSurname.getText());
-                            phone = String.valueOf(editTextPhone.getText());
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    String name, surname, phone;
+                                    name = String.valueOf(editTextName.getText());
+                                    surname = String.valueOf(editTextSurname.getText());
+                                    phone = String.valueOf(editTextPhone.getText());
 
-                            FirebaseUser fUser = mAuth.getCurrentUser();
-                            updateUserProfileImage(fUser);
-                            saveNewUserData(name, surname, phone, fUser);
+                                    FirebaseUser fUser = mAuth.getCurrentUser();
+                                    updateUserProfileImage(fUser);
+                                    saveNewUserData(name, surname, phone, fUser);
 
-                            fUser.sendEmailVerification()
-                                    .addOnCompleteListener(emailTask -> {
-                                        if (emailTask.isSuccessful()) {
-                                            Toast.makeText(getApplicationContext(), "Ti è stata mandata una e-mail", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        } else {
-                            try {
-                                throw task.getException();
-                            } catch(FirebaseAuthWeakPasswordException e) {
-                                editTextPassword.setError(getString(R.string.error_weak_password));
-                                editTextPassword.requestFocus();
-                            } catch(FirebaseAuthInvalidCredentialsException e) {
-                                editTextEmail.setError(getString(R.string.error_invalid_email));
-                                editTextEmail.requestFocus();
-                            } catch(FirebaseAuthUserCollisionException e) {
-                                editTextEmail.setError(getString(R.string.error_user_exists));
-                                editTextEmail.requestFocus();
-                            } catch(Exception e) {
-                                Log.e(TAG, e.getMessage());
+                                    fUser.sendEmailVerification()
+                                            .addOnCompleteListener(emailTask -> {
+                                                if (emailTask.isSuccessful()) {
+                                                    Toast.makeText(getApplicationContext(), "Ti è stata mandata una e-mail", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                } else {
+                                    try {
+                                        throw task.getException();
+                                    } catch(FirebaseAuthWeakPasswordException e) {
+                                        editTextPassword.setError(getString(R.string.error_weak_password));
+                                        editTextPassword.requestFocus();
+                                    } catch(FirebaseAuthInvalidCredentialsException e) {
+                                        editTextEmail.setError(getString(R.string.error_invalid_email));
+                                        editTextEmail.requestFocus();
+                                    } catch(FirebaseAuthUserCollisionException e) {
+                                        editTextEmail.setError(getString(R.string.error_user_exists));
+                                        editTextEmail.requestFocus();
+                                    } catch(Exception e) {
+                                        Log.e(TAG, e.getMessage());
+                                    }
+                                }
                             }
-                        }
-                    }
-                });
+                        });
+                }
             }
-
         });
 
         profileImg.setOnClickListener(new View.OnClickListener() {
@@ -228,24 +197,32 @@ public class RegistrationActivity extends AppCompatActivity {
     public void switchCarDetailsVisibility(boolean checked){
         if(checked){
             //TODO sistema duplicati
-            carModelTxt.setVisibility(View.VISIBLE);
-            carPlateTxt.setVisibility(View.VISIBLE);
+            //carModelTxt.setVisibility(View.VISIBLE);
+            carPlateInputLayout.setVisibility(View.VISIBLE);
             carColorInputLayout.setVisibility(View.VISIBLE);
+            carModelInputLayout.setVisibility(View.VISIBLE);
 
+            /* cancellare
             ConstraintLayout constraintLayout = findViewById(R.id.registration_layout);
             ConstraintSet constraintSet = new ConstraintSet();
             constraintSet.clone(constraintLayout);
             constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.car_color_input_layout, ConstraintSet.BOTTOM,20);
             constraintSet.applyTo(constraintLayout);
+
+             */
         }else{
-            carModelTxt.setVisibility(View.GONE);
-            carPlateTxt.setVisibility(View.GONE);
+            //carModelTxt.setVisibility(View.GONE);
+            carPlateInputLayout.setVisibility(View.GONE);
             carColorInputLayout.setVisibility(View.GONE);
+            carModelInputLayout.setVisibility(View.GONE);
+            /* cancellare
             ConstraintLayout constraintLayout = findViewById(R.id.registration_layout);
             ConstraintSet constraintSet = new ConstraintSet();
             constraintSet.clone(constraintLayout);
             constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.car_switch, ConstraintSet.BOTTOM,0);
             constraintSet.applyTo(constraintLayout);
+
+             */
         }
     }
 
@@ -294,4 +271,73 @@ public class RegistrationActivity extends AppCompatActivity {
         return mime.getExtensionFromMimeType(cr.getType(uri));
     }
 
+    public boolean checkFilledUserValues(){
+        String email, password, name, surname, phone;
+        name = String.valueOf(editTextName.getText());
+        surname = String.valueOf(editTextSurname.getText());
+        phone = String.valueOf(editTextPhone.getText());
+        email = String.valueOf(editTextEmail.getText());
+        password = String.valueOf(editTextPassword.getText());
+        String unictRegexPattern = "^[A-Za-z0-9._%+-]+@" + Pattern.quote("studium.unict.it") + "$";
+
+        if(TextUtils.isEmpty(email)){
+            editTextEmail.setError("Inserire un'email");
+            editTextEmail.requestFocus();
+            return false;
+        }
+        /* SBLOCCA PER CONTROLLARE DOMINIO MAIL
+        else{
+            if(!email.matches(unictRegexPattern)){
+                editTextEmail.setError("Inserire un'email unict");
+                editTextEmail.requestFocus();
+                return false;
+            }
+        }
+         */
+        if(TextUtils.isEmpty(password)){
+            editTextPassword.setError("Inserire una password");
+            editTextPassword.requestFocus();
+            return false;
+        }
+        if(TextUtils.isEmpty(name)){
+            editTextName.setError("Inserire un nome");
+            editTextName.requestFocus();
+            return false;
+        }
+        if(TextUtils.isEmpty(surname)){
+            editTextSurname.setError("Inserire un cognome");
+            editTextSurname.requestFocus();
+            return false;
+        }
+        if(TextUtils.isEmpty(phone)){
+            editTextPhone.setError("Inserire un cellulare");
+            editTextPhone.requestFocus();
+            return false;
+        }
+        if(profileImageUri == null){
+            Toast.makeText(getApplicationContext(), "Devi scegliere un'immagine del profilo", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(carSwitch.isChecked() && !checkFilledCarValues()){
+            return false;
+        }
+        return true;
+    }
+
+    public boolean checkFilledCarValues(){
+        String carModel = carModelTxt.getText().toString();
+        String carColor = carColorTxt.getText().toString();
+        String carPlate = carPlateTxt.getText().toString();
+        if(carModel.isEmpty()){
+            Toast.makeText(getApplicationContext(), "Devi inserire un modello di auto", Toast.LENGTH_SHORT).show();
+            return false;
+        }else if(carColor.isEmpty()){
+            Toast.makeText(getApplicationContext(), "Devi inserire un colore di auto", Toast.LENGTH_SHORT).show();
+            return false;
+        }else if(carPlate.isEmpty()){
+            Toast.makeText(getApplicationContext(), "Devi inserire una targa di auto", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
 }

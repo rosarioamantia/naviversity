@@ -209,7 +209,6 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(b){
-                    btnModify.performClick();
                     carConstraintLayout.setVisibility(View.VISIBLE);
                     carModelTxt.setAdapter(carModelsAdapter);
                     carColorTxt.setAdapter(carColorsAdapter);
@@ -242,9 +241,9 @@ public class ProfileFragment extends Fragment {
                 btnConfirm.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(checkIsFilledCarValues()){
+                        if(checkFilledCarValues()){
                             if(currentUser.isCarOwner()){
-                                if(checkAreChangedCarValues()){
+                                if(checkChangedCarValues()){
                                     updateUserCar();
                                 }
                             }else{
@@ -298,7 +297,7 @@ public class ProfileFragment extends Fragment {
         dbReference.updateChildren(childUpdates);
         Toast.makeText(getContext(), "Automobile aggiunta correttamente", Toast.LENGTH_SHORT).show();
     }
-    public boolean checkIsFilledCarValues(){
+    public boolean checkFilledCarValues(){
         String carModel = carModelTxt.getText().toString();
         String carColor = carColorTxt.getText().toString();
         String carPlate = carPlateTxt.getText().toString();
@@ -312,10 +311,9 @@ public class ProfileFragment extends Fragment {
             Toast.makeText(getContext(), "Devi inserire una targa di auto", Toast.LENGTH_SHORT).show();
             return false;
         }
-
         return true;
     }
-    public boolean checkAreChangedCarValues(){
+    public boolean checkChangedCarValues(){
         String carPlate = carPlateTxt.getText().toString();
         String carColor = carColorTxt.getText().toString();
         String carModel = carModelTxt.getText().toString();
