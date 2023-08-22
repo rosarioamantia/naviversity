@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
@@ -23,6 +24,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -112,6 +114,12 @@ public class ProfileFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setUIData(view);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -143,7 +151,6 @@ public class ProfileFragment extends Fragment {
         carModelsAdapter = new ArrayAdapter<>(getContext(),
                 androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
                 carModels);
-        setUIData(view);
         profileImageUri = fUser.getPhotoUrl();
         profileImg = view.findViewById(R.id.profile_image);
         firebaseStorage = FirebaseStorage.getInstance();

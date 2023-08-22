@@ -30,6 +30,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -70,10 +71,20 @@ public class MapsFragment extends Fragment {
     DatabaseReference dbReference;
     AutoCompleteTextView startTxt;
     AutoCompleteTextView stopTxt;
+    TextInputLayout startLayout, stopLayout, dateLayout, timeLayout;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            googleMap.getUiSettings().setAllGesturesEnabled(false);
+            //googleMap.getUiSettings().setAllGesturesEnabled(false);
+            googleMap.getUiSettings().setAllGesturesEnabled(true);
+            cardSearch.setVisibility(View.GONE);
+
+            //inserisci marker
+            LatLng startCoordinates = new LatLng(start.getLatitude(), start.getLongitude());
+            mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
+            mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore: " + ride.getOwner());
+            mark.showInfoWindow();
+            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
             googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
@@ -92,42 +103,6 @@ public class MapsFragment extends Fragment {
                     //controlla a che serve
                     dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                     return false;
-                }
-            });
-            btnSearch.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //agisci qui per gestire più ride e proporle (limit to first)
-                    rideReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            for(DataSnapshot ds : snapshot.getChildren()){
-                                ride = ds.getValue(Ride.class);
-                                if(ride != null){
-                                    ride.setId(ds.getKey());
-                                    String pickerDate = dateText.getText().toString();
-                                    String pickerTime = timeText.getText().toString();
-
-                                    if(ride.getStart().getName().equals(start.getName())  && ride.getStop().getName().equals(stop.getName()) &&
-                                            pickerDate.equals(ride.getDate()) && isTimeElegible(pickerTime, ride.getTime())){
-                                        googleMap.getUiSettings().setAllGesturesEnabled(true);
-                                        cardSearch.setVisibility(View.GONE);
-
-                                        //inserisci marker
-                                        LatLng startCoordinates = new LatLng(start.getLatitude(), start.getLongitude());
-                                        mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
-                                        mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore: " + ride.getOwner());
-                                        mark.showInfoWindow();
-                                        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
-                                    }
-                                }
-                            }
-                        }
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
                 }
             });
         }
@@ -156,10 +131,17 @@ public class MapsFragment extends Fragment {
         stopTxt = view.findViewById(R.id.stop_txt);
         startTxt.setAdapter(startAdapter);
         stopTxt.setAdapter(stopAdapter);
+        startLayout = view.findViewById(R.id.start_layout);
+        stopLayout = view.findViewById(R.id.stop_layout);
+        timeLayout = view.findViewById(R.id.time_layout);
+        dateLayout = view.findViewById(R.id.date_layout);
 
         stopTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(stopLayout.getError() != null){
+                    stopLayout.setError(null);
+                }
                 stop = (Place) adapterView.getItemAtPosition(i);
             }
         });
@@ -167,6 +149,10 @@ public class MapsFragment extends Fragment {
         startTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                if(startLayout.getError() != null){
+                    startLayout.setError(null);
+                }
                 start = (Place) adapterView.getItemAtPosition(i);
             }
         });
@@ -203,6 +189,9 @@ public class MapsFragment extends Fragment {
                 datePicker = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        if(dateLayout.getError() != null){
+                            dateLayout.setError(null);
+                        }
                         dateText.setText(day + "/" + (month+1) + "/" + year);
                     }
                 }, year, month, day);
@@ -217,6 +206,9 @@ public class MapsFragment extends Fragment {
                 timePicker = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hours, int minutes) {
+                        if(timeLayout.getError() != null){
+                            timeLayout.setError(null);
+                        }
                         timeText.setText(String.format("%02d:%02d", hours, minutes) );
                     }
                 }, time.getHour(), time.getMinute(), true);
@@ -231,7 +223,37 @@ public class MapsFragment extends Fragment {
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-            mapFragment.getMapAsync(callback);
+            btnSearch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View btnView) {
+                    if(checkSearchValues(view)){
+                        rideReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for(DataSnapshot ds : snapshot.getChildren()){
+                                    ride = ds.getValue(Ride.class);
+                                    if(ride != null){
+                                        ride.setId(ds.getKey());
+                                        String pickerDate = dateText.getText().toString();
+                                        String pickerTime = timeText.getText().toString();
+
+                                        if(ride.getStart().getName().equals(start.getName())  && ride.getStop().getName().equals(stop.getName()) &&
+                                                pickerDate.equals(ride.getDate()) && isTimeElegible(pickerTime, ride.getTime())){
+                                            mapFragment.getMapAsync(callback);
+                                            return;
+                                        }
+                                    }
+                                }
+                                Toast.makeText(getContext(), "Nessuna corsa trovata", Toast.LENGTH_SHORT).show();
+                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Toast.makeText(getContext(), "Nessuna corsa trovataa", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            });
         }
     }
     private void createDialog(View v){
@@ -291,5 +313,32 @@ public class MapsFragment extends Fragment {
 
             }
         });
+    }
+
+    public boolean checkSearchValues(View view){
+        String startValue = startTxt.getText().toString();
+        String stopValue = stopTxt.getText().toString();
+        String timeValue = timeText.getText().toString();
+        String dateValue = dateText.getText().toString();
+
+        //agisci qui per gestire più ride e proporle (limit to first)
+        if(startValue.isEmpty()){
+            startLayout.setError("Inserire punto di partenza");
+            return false;
+        }
+        if(stopValue.isEmpty()){
+            stopLayout.setError("Inserire punto di destinazione");
+            return false;
+        }
+        if(dateValue.isEmpty()){
+            dateLayout.setError("Inserire giorno");
+            return false;
+        }
+        if(timeValue.isEmpty()){
+            timeLayout.setError("Inserire orario");
+            return false;
+        }
+
+        return true;
     }
 }

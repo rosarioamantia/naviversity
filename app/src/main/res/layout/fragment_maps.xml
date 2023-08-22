@@ -48,7 +48,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/loginText">
@@ -66,10 +66,10 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="110dp"
                 app:layout_constraintEnd_toEndOf="@+id/start_layout"
                 app:layout_constraintStart_toStartOf="@+id/start_layout"
-                app:layout_constraintTop_toBottomOf="@+id/start_layout">
+                app:layout_constraintTop_toBottomOf="@+id/loginText">
 
                 <AutoCompleteTextView
                     android:id="@+id/stop_txt"
@@ -80,12 +80,12 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayout"
+                android:id="@+id/date_layout"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="200dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/stop_layout">
+                app:layout_constraintTop_toBottomOf="@+id/loginText">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/date"
@@ -96,11 +96,11 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/time_layout"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                app:layout_constraintBottom_toBottomOf="@+id/textInputLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/textInputLayout">
+                app:layout_constraintEnd_toEndOf="@+id/stop_layout"
+                app:layout_constraintTop_toTopOf="@+id/date_layout">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/time"

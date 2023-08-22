@@ -80,7 +80,7 @@ public class RegistrationActivity extends AppCompatActivity {
         dbReference = mDatabase.getReference();
         firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference();
-        btnReg = this.findViewById(R.id.btn_register);
+        btnReg = findViewById(R.id.btn_register);
         editTextEmail = findViewById(R.id.email);
         editTextName = findViewById(R.id.name);
         editTextSurname = findViewById(R.id.surname);
@@ -120,7 +120,10 @@ public class RegistrationActivity extends AppCompatActivity {
         btnReg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email, password;
+                String email, password, name, surname, phone;
+                name = String.valueOf(editTextName.getText());
+                surname = String.valueOf(editTextSurname.getText());
+                phone = String.valueOf(editTextPhone.getText());
                 email = String.valueOf(editTextEmail.getText());
                 password = String.valueOf(editTextPassword.getText());
                 String unictRegexPattern = "^[A-Za-z0-9._%+-]+@" + Pattern.quote("studium.unict.it") + "$";
@@ -138,11 +141,25 @@ public class RegistrationActivity extends AppCompatActivity {
                         return;
                     }
                 }
-
                  */
                 if(TextUtils.isEmpty(password)){
                     editTextPassword.setError("Inserire una password");
                     editTextPassword.requestFocus();
+                    return;
+                }
+                if(TextUtils.isEmpty(name)){
+                    editTextName.setError("Inserire un nome");
+                    editTextName.requestFocus();
+                    return;
+                }
+                if(TextUtils.isEmpty(surname)){
+                    editTextSurname.setError("Inserire un cognome");
+                    editTextSurname.requestFocus();
+                    return;
+                }
+                if(TextUtils.isEmpty(phone)){
+                    editTextPhone.setError("Inserire un cellulare");
+                    editTextPhone.requestFocus();
                     return;
                 }
 
