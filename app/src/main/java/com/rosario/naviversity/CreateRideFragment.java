@@ -1,13 +1,25 @@
 package com.rosario.naviversity;
 
+import static android.content.Context.LOCATION_SERVICE;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +30,14 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.common.GoogleApiAvailabilityLight;
+import com.google.android.gms.common.api.GoogleApi;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -26,6 +46,9 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -58,23 +81,42 @@ public class CreateRideFragment extends Fragment {
     TextInputEditText dateText;
     Button btnConfirm;
     User user;
-
-
+    FusedLocationProviderClient fusedLocationClient;
+    Location currentLocation;
+    LocationRequest mLocationRequest;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
             Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
             getPlaces(googleMap);
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED
+                    || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                googleMap.setMyLocationEnabled(true);
+            }
 
+            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    if(location != null){
+                        LatLng currentLatLang = new LatLng(location.getLatitude(), location.getLongitude());
+                        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(currentLatLang,14, 1, 1)));
+                    }else{
+                        Toast.makeText(getContext(), "Location null", Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            });
             googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
                 public void onInfoWindowClick(@NonNull Marker marker) {
                     Place selectedPlace = getSelectedPlace(marker);
-                    if(isStart(selectedPlace)){
+                    if (isStart(selectedPlace)) {
                         start = selectedPlace;
                         googleMap.clear();
                         showStopPlaces(googleMap);
-                    }else{
+                    } else {
                         stop = selectedPlace;
                         googleMap.clear();
                         View confirmRideCreationView = getLayoutInflater().inflate(R.layout.confirm_ride_creation_dialog, null, false);
@@ -82,8 +124,51 @@ public class CreateRideFragment extends Fragment {
                     }
                 }
             });
+
         }
     };
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+        }
+
+        mLocationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+                .setWaitForAccurateLocation(false)
+                .setMinUpdateIntervalMillis(500)
+                .setMaxUpdateDelayMillis(1000)
+                .build();
+
+        LocationCallback locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    Toast.makeText(getContext(), "posizione no", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    // La posizione attuale è disponibile qui (location)
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    currentLocation = location;
+                    Toast.makeText(getContext(), "posizione ok", Toast.LENGTH_SHORT).show();
+
+                    // Fai qualcosa con la posizione
+                }
+            }
+        };
+
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, null);
+        }
+
+    }
 
     @Nullable
     @Override
@@ -91,12 +176,11 @@ public class CreateRideFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_create_ride, container, false);
-
         mDatabase = FirebaseDatabase.getInstance();
         dbReference = mDatabase.getReference();
         mAuth = FirebaseAuth.getInstance();
-        listStart = new ArrayList<Place>();
-        listStop = new ArrayList<Place>();
+        listStart = new ArrayList<>();
+        listStop = new ArrayList<>();
 
         dbReference.child("user").child(mAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -119,34 +203,43 @@ public class CreateRideFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
         if (mapFragment != null) {
-            mapFragment.getMapAsync(callback);
+            ActivityResultLauncher<String> requestPermissionLauncher =
+                    registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                        if (isGranted) {
+                            mapFragment.getMapAsync(callback);
+                        } else {
+                            Toast.makeText(getContext(), "Hai bisogno dei permessi alla posizione", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+            requestPermissionLauncher.launch(
+                    Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
 
-    public void showStopPlaces(GoogleMap googleMap){
+    public void showStopPlaces(GoogleMap googleMap) {
         Toast.makeText(getContext(), "Scegli punto di arrivo", Toast.LENGTH_SHORT).show();
-        for(Place stop : listStop){
+        for (Place stop : listStop) {
             showMarker(googleMap, stop, "arrivo");
         }
     }
 
-    private void getPlaces(GoogleMap googleMap){
+    private void getPlaces(GoogleMap googleMap) {
         dbReference.child("place").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                if(snapshot.getChildrenCount() > 0){
-                    for(DataSnapshot child : snapshot.getChildren()){
+                if (snapshot.getChildrenCount() > 0) {
+                    for (DataSnapshot child : snapshot.getChildren()) {
                         Place place = child.getValue(Place.class);
-                        if(isStart(place)){
+                        if (isStart(place)) {
                             listStart.add(place);
                             showMarker(googleMap, place, "partenza");
-                        }else{
+                        } else {
                             listStop.add(place);
                         }
                     }
-                    LatLng catania = new LatLng(37.510998603200704, 15.084607243486413);
-                    googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(catania,14, 1, 1)));
                 }
             }
             @Override
