@@ -83,31 +83,18 @@ public class CreateRideFragment extends Fragment {
     User user;
     FusedLocationProviderClient fusedLocationClient;
     Location currentLocation;
-    LocationRequest mLocationRequest;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
             Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
             getPlaces(googleMap);
             if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED
-                    || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 googleMap.setMyLocationEnabled(true);
             }
 
-            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if(location != null){
-                        LatLng currentLatLang = new LatLng(location.getLatitude(), location.getLongitude());
-                        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(currentLatLang,14, 1, 1)));
-                    }else{
-                        Toast.makeText(getContext(), "Location null", Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-            });
+            LatLng currentLatLang = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(currentLatLang,14, 1, 1)));
             googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
                 public void onInfoWindowClick(@NonNull Marker marker) {
@@ -133,41 +120,58 @@ public class CreateRideFragment extends Fragment {
         super.onCreate(savedInstanceState);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
 
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-        }
+        getLastLocation();
+    }
 
-        mLocationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
-                .setWaitForAccurateLocation(false)
-                .setMinUpdateIntervalMillis(500)
-                .setMaxUpdateDelayMillis(1000)
-                .build();
+    private void getLastLocation(){
+        String permission = Manifest.permission.ACCESS_FINE_LOCATION;
 
-        LocationCallback locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    Toast.makeText(getContext(), "posizione no", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    // La posizione attuale è disponibile qui (location)
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
-                    currentLocation = location;
-                    Toast.makeText(getContext(), "posizione ok", Toast.LENGTH_SHORT).show();
+        ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
 
-                    // Fai qualcosa con la posizione
-                }
-            }
-        };
+                        //aggiorna posizione
+                        LocationRequest lr = LocationRequest.create();
+                        lr.setInterval(100);
+                        lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, null);
-        }
+                        LocationCallback lc = new LocationCallback() {
+                            @Override
+                            public void onLocationResult(@NonNull LocationResult locationResult) {
+                                super.onLocationResult(locationResult);
+                            }
+                        };
 
+                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                            //ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
+                            return;
+                        }
+                        fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
+                        Task<Location> task = fusedLocationClient.getLastLocation();
+                        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                if(location != null){
+                                    currentLocation = location;
+                                    SupportMapFragment mapFragment =
+                                            (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+                                    if (mapFragment != null) {
+                                        mapFragment.getMapAsync(callback);
+                                    }
+                                }else{
+                                    Toast.makeText(getContext(), "Devi attivare la localizzazione", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    } else {
+                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        requestPermissionLauncher.launch(permission);
     }
 
     @Nullable
@@ -201,22 +205,8 @@ public class CreateRideFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SupportMapFragment mapFragment =
-                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
-        if (mapFragment != null) {
-            ActivityResultLauncher<String> requestPermissionLauncher =
-                    registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                        if (isGranted) {
-                            mapFragment.getMapAsync(callback);
-                        } else {
-                            Toast.makeText(getContext(), "Hai bisogno dei permessi alla posizione", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-            requestPermissionLauncher.launch(
-                    Manifest.permission.ACCESS_FINE_LOCATION);
-        }
+        //getLastLocation();
     }
 
     public void showStopPlaces(GoogleMap googleMap) {
@@ -225,6 +215,21 @@ public class CreateRideFragment extends Fragment {
             showMarker(googleMap, stop, "arrivo");
         }
     }
+
+    /*@Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == 100){
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                getLastLocation();
+            }else{
+                Toast.makeText(getContext(), "Permessi rifiutati", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+     */
 
     private void getPlaces(GoogleMap googleMap) {
         dbReference.child("place").addListenerForSingleValueEvent(new ValueEventListener() {
