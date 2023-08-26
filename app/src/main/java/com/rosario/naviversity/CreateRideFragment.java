@@ -89,8 +89,10 @@ public class CreateRideFragment extends Fragment {
             Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
             getPlaces(googleMap);
             if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 googleMap.setMyLocationEnabled(true);
+                googleMap.setBuildingsEnabled(false);
             }
 
             LatLng currentLatLang = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
@@ -122,14 +124,17 @@ public class CreateRideFragment extends Fragment {
 
         getLastLocation();
     }
-
     private void getLastLocation(){
-        String permission = Manifest.permission.ACCESS_FINE_LOCATION;
+        String[] permission = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
-        ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                isGranted -> {
-                    if (isGranted) {
+        ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    Boolean fineLocationGranted = result.getOrDefault(
+                            Manifest.permission.ACCESS_FINE_LOCATION, false);
+                    Boolean coarseLocationGranted = result.getOrDefault(
+                            Manifest.permission.ACCESS_COARSE_LOCATION,false);
+                    if (fineLocationGranted || coarseLocationGranted) {
 
                         //aggiorna posizione
                         LocationRequest lr = LocationRequest.create();
@@ -144,8 +149,7 @@ public class CreateRideFragment extends Fragment {
                         };
 
                         if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                            //ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
+                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                             return;
                         }
                         fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
@@ -171,7 +175,10 @@ public class CreateRideFragment extends Fragment {
                     }
                 });
 
-        requestPermissionLauncher.launch(permission);
+        requestPermissionLauncher.launch(new String[] {
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        });
     }
 
     @Nullable
@@ -202,34 +209,12 @@ public class CreateRideFragment extends Fragment {
         return view;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        //getLastLocation();
-    }
-
     public void showStopPlaces(GoogleMap googleMap) {
         Toast.makeText(getContext(), "Scegli punto di arrivo", Toast.LENGTH_SHORT).show();
         for (Place stop : listStop) {
             showMarker(googleMap, stop, "arrivo");
         }
     }
-
-    /*@Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if(requestCode == 100){
-            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                getLastLocation();
-            }else{
-                Toast.makeText(getContext(), "Permessi rifiutati", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-     */
 
     private void getPlaces(GoogleMap googleMap) {
         dbReference.child("place").addListenerForSingleValueEvent(new ValueEventListener() {
