@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId "com.rosario.naviversity"
-        minSdk 26
-        targetSdk 33
+        minSdk 29
+        targetSdk 32
         versionCode 1
         versionName "1.0"
 

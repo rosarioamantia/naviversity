@@ -15,11 +15,13 @@ import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -125,16 +127,16 @@ public class CreateRideFragment extends Fragment {
         getLastLocation();
     }
     private void getLastLocation(){
-        String[] permission = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION/*, Manifest.permission.ACCESS_COARSE_LOCATION*/};
 
         ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 result -> {
                     Boolean fineLocationGranted = result.getOrDefault(
                             Manifest.permission.ACCESS_FINE_LOCATION, false);
-                    Boolean coarseLocationGranted = result.getOrDefault(
-                            Manifest.permission.ACCESS_COARSE_LOCATION,false);
-                    if (fineLocationGranted || coarseLocationGranted) {
+
+                    if (fineLocationGranted) {
+                        Toast.makeText(getContext(), "OKOKe", Toast.LENGTH_SHORT).show();
 
                         //aggiorna posizione
                         LocationRequest lr = LocationRequest.create();
@@ -148,8 +150,8 @@ public class CreateRideFragment extends Fragment {
                             }
                         };
 
-                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED/* &&
+                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED*/){
                             return;
                         }
                         fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
@@ -171,14 +173,10 @@ public class CreateRideFragment extends Fragment {
                             }
                         });
                     } else {
-                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione per creare una corsa", Toast.LENGTH_SHORT).show();
                     }
                 });
-
-        requestPermissionLauncher.launch(new String[] {
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        });
+        requestPermissionLauncher.launch(permissions);
     }
 
     @Nullable
@@ -309,17 +307,33 @@ public class CreateRideFragment extends Fragment {
         btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                TextInputLayout dateInputLayout = confirmRideCreationView.findViewById(R.id.dateInputLayout);
+                TextInputLayout timeInputLayout = confirmRideCreationView.findViewById(R.id.timeInputLayout);
                 if(dateText.getText().toString().matches("")){
-                    TextInputLayout t = confirmRideCreationView.findViewById(R.id.dateInputLayout);
-                    t.setError("Deve essere selezionata una data");
-                }else{
-                    // TODO aggiungi con gestione eccezioni
-                    if(user != null && user.isCarOwner()){
-                        writeNewRide();
-                        dialog.hide();
-                    }else{
-                        Toast.makeText(getContext(), "prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
+                    dateInputLayout.setError("Inserisci un valore");
+                    dateInputLayout.setErrorIconDrawable(null);
+                    return;
+                }else {
+                    if (dateInputLayout.getError() != null) {
+                        dateInputLayout.setError(null);
                     }
+                }
+                if(timeText.getText().toString().matches("")){
+                    timeInputLayout.setError("Inserisci un valore");
+                    timeInputLayout.setErrorIconDrawable(null);
+                    return;
+                }else{
+                    if (timeInputLayout.getError() != null) {
+                        timeInputLayout.setError(null);
+                    }
+                }
+
+                // TODO aggiungi con gestione eccezioni
+                if(user != null && user.isCarOwner()){
+                    writeNewRide();
+                    dialog.hide();
+                }else{
+                    Toast.makeText(getContext(), "prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                 }
             }
         });

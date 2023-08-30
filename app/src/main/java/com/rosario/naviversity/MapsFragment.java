@@ -1,13 +1,22 @@
 package com.rosario.naviversity;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.pm.PackageManager;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +29,12 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -28,6 +43,8 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -72,10 +89,15 @@ public class MapsFragment extends Fragment {
     AutoCompleteTextView startTxt;
     AutoCompleteTextView stopTxt;
     TextInputLayout startLayout, stopLayout, dateLayout, timeLayout;
+    FusedLocationProviderClient fusedLocationClient;
+    Location currentLocation;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            //googleMap.getUiSettings().setAllGesturesEnabled(false);
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                googleMap.setMyLocationEnabled(true);
+                googleMap.setBuildingsEnabled(false);
+            }
             googleMap.getUiSettings().setAllGesturesEnabled(true);
             cardSearch.setVisibility(View.GONE);
 
@@ -107,6 +129,7 @@ public class MapsFragment extends Fragment {
             });
         }
     };
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -149,7 +172,6 @@ public class MapsFragment extends Fragment {
         startTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
                 if(startLayout.getError() != null){
                     startLayout.setError(null);
                 }
@@ -178,7 +200,6 @@ public class MapsFragment extends Fragment {
 
             }
         });
-
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -198,7 +219,6 @@ public class MapsFragment extends Fragment {
                 datePicker.show();
             }
         });
-
         timeText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -217,44 +237,104 @@ public class MapsFragment extends Fragment {
         });
         return view;
     }
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        SupportMapFragment mapFragment =
-                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            btnSearch.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View btnView) {
-                    if(checkSearchValues(view)){
-                        rideReference.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for(DataSnapshot ds : snapshot.getChildren()){
-                                    ride = ds.getValue(Ride.class);
-                                    if(ride != null){
-                                        ride.setId(ds.getKey());
-                                        String pickerDate = dateText.getText().toString();
-                                        String pickerTime = timeText.getText().toString();
 
-                                        if(ride.getStart().getName().equals(start.getName())  && ride.getStop().getName().equals(stop.getName()) &&
-                                                pickerDate.equals(ride.getDate()) && isTimeElegible(pickerTime, ride.getTime())){
-                                            mapFragment.getMapAsync(callback);
-                                            return;
-                                        }
-                                    }
-                                }
-                                Toast.makeText(getContext(), "Nessuna corsa trovata", Toast.LENGTH_SHORT).show();
-                            }
+    private void getLastLocation(View view){
+        String[] permissions = {android.Manifest.permission.ACCESS_FINE_LOCATION/*, Manifest.permission.ACCESS_COARSE_LOCATION*/};
+
+        ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    Boolean fineLocationGranted = result.getOrDefault(
+                            android.Manifest.permission.ACCESS_FINE_LOCATION, false);
+
+                    if (fineLocationGranted) {
+                        Toast.makeText(getContext(), "OKOKe", Toast.LENGTH_SHORT).show();
+
+                        //aggiorna posizione
+                        LocationRequest lr = LocationRequest.create();
+                        lr.setInterval(100);
+                        lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+                        LocationCallback lc = new LocationCallback() {
                             @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                                Toast.makeText(getContext(), "Nessuna corsa trovataa", Toast.LENGTH_SHORT).show();
+                            public void onLocationResult(@NonNull LocationResult locationResult) {
+                                super.onLocationResult(locationResult);
+                            }
+                        };
+
+                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED/* &&
+                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED*/){
+                            return;
+                        }
+                        fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
+                        Task<Location> task = fusedLocationClient.getLastLocation();
+                        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                if(location != null){
+                                    currentLocation = location;
+                                    SupportMapFragment mapFragment =
+                                            (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+                                    if (mapFragment != null) {
+                                        btnSearch.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View btnView) {
+                                                if(checkSearchValues(view)){
+                                                    rideReference.addValueEventListener(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                            for(DataSnapshot ds : snapshot.getChildren()){
+                                                                ride = ds.getValue(Ride.class);
+                                                                if(ride != null){
+                                                                    ride.setId(ds.getKey());
+                                                                    String pickerDate = dateText.getText().toString();
+                                                                    String pickerTime = timeText.getText().toString();
+
+                                                                    if(ride.getStart().getName().equals(start.getName())  && ride.getStop().getName().equals(stop.getName()) &&
+                                                                            pickerDate.equals(ride.getDate()) && isTimeElegible(pickerTime, ride.getTime())){
+                                                                        mapFragment.getMapAsync(callback);
+                                                                        return;
+                                                                    }
+                                                                }
+                                                            }
+                                                            Toast.makeText(getContext(), "Nessuna corsa trovata", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+                                    }
+                                }else{
+                                    Toast.makeText(getContext(), "Devi attivare la localizzazione", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    } else {
+                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione", Toast.LENGTH_SHORT).show();
+                        btnSearch.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View btnView) {
+                                Toast.makeText(getContext(), "Devi accettare i permessi alla posizione per fare una ricerca", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
-                }
-            });
-        }
+                });
+        requestPermissionLauncher.launch(permissions);
+    }
+
+
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+        getLastLocation(view);
+
     }
     private void createDialog(View v){
         fillDialogData(v);
