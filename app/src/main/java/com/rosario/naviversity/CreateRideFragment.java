@@ -48,7 +48,6 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -136,7 +135,6 @@ public class CreateRideFragment extends Fragment {
                             Manifest.permission.ACCESS_FINE_LOCATION, false);
 
                     if (fineLocationGranted) {
-                        Toast.makeText(getContext(), "OKOKe", Toast.LENGTH_SHORT).show();
 
                         //aggiorna posizione
                         LocationRequest lr = LocationRequest.create();

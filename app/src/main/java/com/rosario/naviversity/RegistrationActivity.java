@@ -1,15 +1,25 @@
 package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +33,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -47,7 +61,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class RegistrationActivity extends AppCompatActivity {
-    private final int PICK_IMAGE_REQUEST = 1;
+    private final int PICK_IMAGE_REQUEST = 100;
+    private final int READ_STORAGE_REQUEST = 200;
     Button btnReg;
     TextInputEditText editTextEmail, editTextPassword, editTextName, editTextSurname, editTextPhone;
     FirebaseDatabase mDatabase;
@@ -98,7 +113,6 @@ public class RegistrationActivity extends AppCompatActivity {
         carModels = getResources().getStringArray(R.array.car_models);
         carColorTxt = findViewById(R.id.car_color_txt);
         profileImg = findViewById(R.id.profile_image);
-
         ArrayAdapter<String> colorAdapter = new ArrayAdapter<>(this,
                 androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
                         carColors);
@@ -173,16 +187,34 @@ public class RegistrationActivity extends AppCompatActivity {
                 }
             }
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         profileImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent galleryIntent = new Intent();
-                galleryIntent.setType("image/*");
-                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(galleryIntent, "Seleziona immagine del profilo"), PICK_IMAGE_REQUEST);
+                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    Intent galleryIntent = new Intent();
+                    galleryIntent.setType("image/*");
+                    galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(galleryIntent, "Seleziona immagine del profilo"), PICK_IMAGE_REQUEST);
+                } else {
+                    ActivityCompat.requestPermissions(RegistrationActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_REQUEST);
+                }
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == READ_STORAGE_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getApplicationContext(), "Devi accettare i permessi allo storage del dispositivo", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
