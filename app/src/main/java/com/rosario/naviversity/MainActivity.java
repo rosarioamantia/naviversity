@@ -60,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null && currentUser.isEmailVerified()){
             Toast.makeText(getApplicationContext(), "Utente già loggato", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(getApplicationContext(), HomepageActivity.class);
+            //Intent intent = new Intent(getApplicationContext(), HomepageActivity.class);
+            Intent intent = new Intent(getApplicationContext(), AdministrationActivity.class);
             startActivity(intent);
             finish();
         }
@@ -118,7 +119,8 @@ public class MainActivity extends AppCompatActivity {
                                     if(!user.isEmailVerified()){
                                         Toast.makeText(getApplicationContext(), "devi verificare l'email", Toast.LENGTH_SHORT).show();
                                     }else{
-                                        Intent i = new Intent(getApplicationContext(), HomepageActivity.class);
+                                        //Intent i = new Intent(getApplicationContext(), HomepageActivity.class);
+                                        Intent i = new Intent(getApplicationContext(), AdministrationActivity.class);
                                         startActivity(i);
                                         finish();
                                     }

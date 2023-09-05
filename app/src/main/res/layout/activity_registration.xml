@@ -77,7 +77,6 @@
                 android:hint="@string/password"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="371dp" />
-
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout

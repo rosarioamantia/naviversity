@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddPlaceFragment">
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_name_input_layout"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:hint="Nome"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/place_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_lat_input_layout"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:hint="Latitudine"
+        app:layout_constraintEnd_toEndOf="@+id/place_name_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/place_name_input_layout"
+        app:layout_constraintTop_toBottomOf="@+id/place_name_input_layout">
+
+        <EditText
+            android:id="@+id/place_lat"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_long_input_layout"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:hint="Longitudine"
+        app:layout_constraintEnd_toEndOf="@+id/place_lat_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/place_lat_input_layout"
+        app:layout_constraintTop_toBottomOf="@+id/place_lat_input_layout">
+
+        <EditText
+            android:id="@+id/place_long"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_type_input_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:hint="Tipologia"
+        app:layout_constraintEnd_toEndOf="@+id/place_long_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/place_long_input_layout"
+        app:layout_constraintTop_toBottomOf="@+id/place_long_input_layout">
+
+        <AutoCompleteTextView
+            android:id="@+id/place_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:hint="Tipologia" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btn_add"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Aggiungi"
+        app:layout_constraintEnd_toEndOf="@+id/place_type_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/place_type_input_layout"
+        app:layout_constraintTop_toBottomOf="@+id/place_type_input_layout" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
