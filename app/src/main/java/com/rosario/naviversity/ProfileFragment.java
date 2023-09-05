@@ -2,6 +2,7 @@ package com.rosario.naviversity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -22,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -29,7 +31,9 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +51,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
@@ -60,8 +65,8 @@ import java.util.Map;
  * create an instance of this fragment.
  */
 public class ProfileFragment extends Fragment {
-    private final int PICK_IMAGE_REQUEST = 100;
-    private final int READ_STORAGE_REQUEST = 200;
+    final int PICK_IMAGE_REQUEST = 100;
+    final int READ_STORAGE_REQUEST = 200;
     FirebaseAuth mAuth;
     FirebaseUser fUser;
     SwitchMaterial carSwitch;
@@ -82,6 +87,7 @@ public class ProfileFragment extends Fragment {
     ImageView profileImg;
     StorageReference storageReference;
     FirebaseStorage firebaseStorage;
+    ProgressBar progressBar;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -136,19 +142,22 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == Activity.RESULT_OK) {
+
                         // There are no request codes
                         Intent data = result.getData();
                         profileImageUri = data.getData();
-                        profileImg.setImageURI(profileImageUri);
                         fUser = mAuth.getCurrentUser();
                         updateUserProfileImage();
-                        //doSomeOperations();
                     }
                 }
             });
 
     public void updateUserProfileImage(){
         StorageReference profileImgRef = storageReference.child("/profile_images/" + fUser.getUid());
+
+        progressBar.setVisibility(View.VISIBLE);
+        getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         profileImgRef.putFile(profileImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -159,14 +168,17 @@ public class ProfileFragment extends Fragment {
                                 .setPhotoUri(profileImageUri)  //TODO valuta se cambiare con uri parametro (riga sopra)
                                 .build();
                         fUser.updateProfile(profileUpdates);
-                        Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                        profileImg.setImageURI(profileImageUri);
+                        Toast.makeText(getContext(), "Immagine aggiornata", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
     }
 
-    private ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+    ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
             new ActivityResultCallback<Boolean>() {
                 @Override
@@ -197,15 +209,6 @@ public class ProfileFragment extends Fragment {
                 requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
             }
         });
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == READ_STORAGE_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getContext(), "Devi accettare i permessi allo storage del dispositivo", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     @Override
@@ -244,6 +247,7 @@ public class ProfileFragment extends Fragment {
         profileImg = view.findViewById(R.id.profile_image);
         firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference();
+        progressBar = view.findViewById(R.id.progress_bar);
         return view;
     }
     public void setUIData(View view){
@@ -263,7 +267,7 @@ public class ProfileFragment extends Fragment {
                     ratingBar.setRating(scoreToShow);
                 }
 
-                setProfleImage();
+                setProfileImage();
 
                 if(currentUser.isCarOwner()){
                     carSwitch.setChecked(true);
@@ -413,12 +417,12 @@ public class ProfileFragment extends Fragment {
         return false;
     }
 
-    public void setProfleImage(){
+    public void setProfileImage(){
         StorageReference fileRef = storageReference.child("/profile_images/" + fUser.getUid());
         fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-                profileImg.setVisibility(View.VISIBLE);
+                //profileImg.setVisibility(View.VISIBLE);
                 //profileImg.setImageURI(uri);
                 Picasso.get().load(uri).into(profileImg);
             }

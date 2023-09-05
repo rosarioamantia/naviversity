@@ -9,19 +9,13 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,16 +24,11 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
-import com.google.android.gms.common.GoogleApiAvailabilityLight;
-import com.google.android.gms.common.api.GoogleApi;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -59,7 +48,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -122,7 +110,6 @@ public class CreateRideFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
-
         getLastLocation();
     }
     private void getLastLocation(){
@@ -135,8 +122,6 @@ public class CreateRideFragment extends Fragment {
                             Manifest.permission.ACCESS_FINE_LOCATION, false);
 
                     if (fineLocationGranted) {
-
-                        //aggiorna posizione
                         LocationRequest lr = LocationRequest.create();
                         lr.setInterval(100);
                         lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -148,8 +133,7 @@ public class CreateRideFragment extends Fragment {
                             }
                         };
 
-                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED/* &&
-                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED*/){
+                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                             return;
                         }
                         fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
@@ -161,12 +145,11 @@ public class CreateRideFragment extends Fragment {
                                     currentLocation = location;
                                     SupportMapFragment mapFragment =
                                             (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-
                                     if (mapFragment != null) {
                                         mapFragment.getMapAsync(callback);
                                     }
                                 }else{
-                                    Toast.makeText(getContext(), "Devi attivare la localizzazione", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Devi attivare la localizzazione per creare una corsa", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
@@ -236,7 +219,7 @@ public class CreateRideFragment extends Fragment {
     }
 
     private boolean isStart(Place place){
-        return (place.getType().equals("START") ? true : false);
+        return place.getType().equals("START");
     }
 
     private Place getSelectedPlace(Marker marker){
@@ -331,16 +314,16 @@ public class CreateRideFragment extends Fragment {
                     writeNewRide();
                     dialog.hide();
                 }else{
-                    Toast.makeText(getContext(), "prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
-    private void fillDialogData(View v){
-        TextView ownerTxt = v.findViewById(R.id.rideOwner);
-        TextView startTxt = v.findViewById(R.id.rideStart);
-        TextView stopTxt = v.findViewById(R.id.rideStop);
+    private void fillDialogData(View view){
+        TextView ownerTxt = view.findViewById(R.id.rideOwner);
+        TextView startTxt = view.findViewById(R.id.rideStart);
+        TextView stopTxt = view.findViewById(R.id.rideStop);
         ownerTxt.setText("idUtenteLoggato");
         startTxt.setText(start.getName());
         stopTxt.setText(stop.getName());

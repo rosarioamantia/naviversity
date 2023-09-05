@@ -6,6 +6,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ActivitiesFragment">
 
+    <TextView
+        android:id="@+id/missing_activities"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nessuna attività presente"
+        android:drawableTop="@drawable/baseline_car_crash_24"
+        android:textSize="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.cardview.widget.CardView
         android:id="@+id/rate_card"
         android:layout_width="250dp"
@@ -51,9 +64,8 @@
         android:id="@+id/mRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

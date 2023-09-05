@@ -1,41 +1,32 @@
 package com.rosario.naviversity;
 
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
+import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ActivitiesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ActivitiesFragment extends Fragment {
     ArrayList<Ride> listRides = new ArrayList<>();
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
     FirebaseAuth mAuth;
+    TextView missingActivitiesTxt;
 
     public ActivitiesFragment() {}
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -45,6 +36,7 @@ public class ActivitiesFragment extends Fragment {
         dbReference = mDatabase.getReference();
         mAuth = FirebaseAuth.getInstance();
         String currentUserId = mAuth.getUid();
+        missingActivitiesTxt = view.findViewById(R.id.missing_activities);
 
         dbReference.child("ride").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -57,6 +49,9 @@ public class ActivitiesFragment extends Fragment {
                     if(rideMembers.get(currentUserId) != null){
                         listRides.add(ride);
                     }
+                }
+                if(listRides.isEmpty()){
+                    missingActivitiesTxt.setVisibility(View.VISIBLE);
                 }
                 RideRecyclerViewAdapter adapter = new RideRecyclerViewAdapter(getContext(), listRides, currentUserId);
                 RecyclerView recyclerView = view.findViewById(R.id.mRecyclerView);

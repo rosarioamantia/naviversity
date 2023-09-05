@@ -290,7 +290,6 @@ public class RegistrationActivity extends AppCompatActivity {
                                 .setPhotoUri(profileImageUri)  //TODO valuta se cambiare con uri parametro (riga sopra)
                                 .build();
                         fUser.updateProfile(profileUpdates);
-                        Toast.makeText(getApplicationContext(), "Uploaded", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

@@ -13,7 +13,6 @@ import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.pm.PackageManager;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -55,7 +54,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.ktx.Firebase;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -66,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MapsFragment extends Fragment {
+    final static int MAX_RIDE_MEMBERS_ALLOWED = 4;
     Place start;
     Place stop;
     Button btnSearch;
@@ -248,8 +247,6 @@ public class MapsFragment extends Fragment {
                             android.Manifest.permission.ACCESS_FINE_LOCATION, false);
 
                     if (fineLocationGranted) {
-                        Toast.makeText(getContext(), "OKOKe", Toast.LENGTH_SHORT).show();
-
                         //aggiorna posizione
                         LocationRequest lr = LocationRequest.create();
                         lr.setInterval(100);
@@ -288,11 +285,7 @@ public class MapsFragment extends Fragment {
                                                                 ride = ds.getValue(Ride.class);
                                                                 if(ride != null){
                                                                     ride.setId(ds.getKey());
-                                                                    String pickerDate = dateText.getText().toString();
-                                                                    String pickerTime = timeText.getText().toString();
-
-                                                                    if(ride.getStart().getName().equals(start.getName())  && ride.getStop().getName().equals(stop.getName()) &&
-                                                                            pickerDate.equals(ride.getDate()) && isTimeElegible(pickerTime, ride.getTime())){
+                                                                    if(checkIsRideEligible(ride)){
                                                                         mapFragment.getMapAsync(callback);
                                                                         return;
                                                                     }
@@ -327,8 +320,29 @@ public class MapsFragment extends Fragment {
         requestPermissionLauncher.launch(permissions);
     }
 
+    public boolean checkIsRideEligible(Ride ride){
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String currentUserId = currentUser.getUid();
+        String searchedRideStartName = ride.getStart().getName();
+        String searchedRideStopName = ride.getStop().getName();
+        String searchedRideDate = ride.getDate();
+        String searchedRideTime = ride.getTime();
+        String pickerDate = dateText.getText().toString();
+        String pickerTime = timeText.getText().toString();
+        HashMap<String, User> rideMembers = ride.getMembers();
 
+        boolean checkStart = searchedRideStartName.equals(start.getName());
+        boolean checkStop = searchedRideStopName.equals(stop.getName());
+        boolean checkDate = pickerDate.equals(searchedRideDate);
+        boolean checkTime = checkIsTimeEligible(pickerTime, searchedRideTime);
+        boolean maxMembersReached = rideMembers.size() > MAX_RIDE_MEMBERS_ALLOWED;
+        boolean isAlreadyMember = rideMembers.get(currentUserId) != null;
 
+        if(checkStart && checkStop && checkDate && checkTime && !maxMembersReached && !isAlreadyMember){
+            return true;
+        }
+        return false;
+    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -360,7 +374,7 @@ public class MapsFragment extends Fragment {
         date.setText(rideDate);
         time.setText(rideTime);
     }
-    public boolean isTimeElegible(String pickerTime, String rideTime){
+    public boolean checkIsTimeEligible(String pickerTime, String rideTime){
         LocalTime superiorLimit = LocalTime.parse(pickerTime).plus(31, ChronoUnit.MINUTES);
         LocalTime inferiorLimit = LocalTime.parse(pickerTime).minus(31, ChronoUnit.MINUTES);
         LocalTime ride = LocalTime.parse(rideTime);
@@ -401,7 +415,6 @@ public class MapsFragment extends Fragment {
         String timeValue = timeText.getText().toString();
         String dateValue = dateText.getText().toString();
 
-        //agisci qui per gestire più ride e proporle (limit to first)
         if(startValue.isEmpty()){
             startLayout.setError("Inserire punto di partenza");
             return false;
@@ -412,13 +425,14 @@ public class MapsFragment extends Fragment {
         }
         if(dateValue.isEmpty()){
             dateLayout.setError("Inserire giorno");
+            dateLayout.setErrorIconDrawable(null);
             return false;
         }
         if(timeValue.isEmpty()){
             timeLayout.setError("Inserire orario");
+            timeLayout.setErrorIconDrawable(null);
             return false;
         }
-
         return true;
     }
 }
