@@ -36,4 +36,9 @@
         <item>BMW</item>
         <item>NISSAN</item>
     </string-array>
+
+    <string-array name="place_types">
+        <item>Partenza</item>
+        <item>Destinazione</item>
+    </string-array>
 </resources>
