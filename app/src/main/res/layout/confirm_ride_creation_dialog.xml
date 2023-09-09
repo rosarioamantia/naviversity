@@ -21,80 +21,54 @@
         tools:layout_editor_absoluteX="0dp" />
 
     <TextView
-        android:id="@+id/ownerText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="25dp"
-        android:text="Organizzatore"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmText" />
-
-    <TextView
-        android:id="@+id/rideOwner"
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="30dp"
-        android:ellipsize="middle"
-        android:maxLines="1"
-        android:gravity="end"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmText" />
-
-    <TextView
         android:id="@+id/rideStart"
         android:layout_width="220dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="30dp"
         android:ellipsize="marquee"
-        android:maxLines="2"
         android:gravity="end"
+        android:maxLines="2"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rideOwner" />
+        app:layout_constraintTop_toBottomOf="@+id/confirmText" />
 
     <TextView
         android:id="@+id/textStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         android:text="Partenza"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ownerText" />
+        app:layout_constraintTop_toBottomOf="@+id/confirmText" />
 
     <TextView
         android:id="@+id/textStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         android:text="Destinazione"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rideStart" />
+        app:layout_constraintTop_toBottomOf="@+id/textStart" />
 
 
     <TextView
         android:id="@+id/rideStop"
         android:layout_width="220dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:layout_marginEnd="30dp"
         android:ellipsize="marquee"
-        android:maxLines="2"
         android:gravity="end"
+        android:maxLines="2"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rideStart" />
+        app:layout_constraintTop_toTopOf="@+id/textStop" />
 
     <TextView
         android:id="@+id/textDate"
@@ -112,19 +86,18 @@
         android:id="@+id/dateInputLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="30dp"
-        tools:layout_editor_absoluteX="24dp"
         android:hint="Seleziona la data"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rideStop">
+        app:layout_constraintTop_toBottomOf="@+id/textStop">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/rideDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Seleziona la data"
-            android:focusable="false"/>
+            android:focusable="false"
+            android:hint="Seleziona la data" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -142,7 +115,7 @@
         android:id="@+id/timeInputLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="90dp"
+        android:layout_marginTop="95dp"
         android:layout_marginEnd="30dp"
         android:focusable="false"
         android:hint="Seleziona l'orario"

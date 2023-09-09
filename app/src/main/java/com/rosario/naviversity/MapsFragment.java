@@ -103,7 +103,10 @@ public class MapsFragment extends Fragment {
             //inserisci marker
             LatLng startCoordinates = new LatLng(start.getLatitude(), start.getLongitude());
             mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
-            mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore: " + ride.getOwner());
+            String rideOwnerId = ride.getOwner();
+            User rideOwner = ride.getMembers().get(rideOwnerId);
+            String completeOwnerName = rideOwner.getName() + " " + rideOwner.getSurname();
+            mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore: " + completeOwnerName);
             mark.showInfoWindow();
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
             googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -111,7 +114,7 @@ public class MapsFragment extends Fragment {
                 public boolean onMarkerClick(Marker marker) {
                     mark.hideInfoWindow();
                     View confirmRideView = getLayoutInflater().inflate(R.layout.confirm_ride_dialog, null, false);
-                    createDialog(confirmRideView);
+                    createDialog(confirmRideView, rideOwner);
                     Button btnConfirm = confirmRideView.findViewById(R.id.btnConfirm);
                     btnConfirm.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -350,13 +353,12 @@ public class MapsFragment extends Fragment {
         getLastLocation(view);
 
     }
-    private void createDialog(View v){
-        fillDialogData(v);
+    private void createDialog(View v, User rideOwner){
+        fillDialogData(v, rideOwner);
         dialog.setContentView(v);
         dialog.show();
     }
-    private void fillDialogData(View v){
-        String rideOwner = ride.getOwner();
+    private void fillDialogData(View v, User rideOwner){ // modifica owner: metti ratingbar riempita con i suoi dati (OYEAHHHH)
         String startName = ride.getStart().getName();
         String stopName = ride.getStop().getName();
         String rideDate = ride.getDate();
@@ -368,7 +370,7 @@ public class MapsFragment extends Fragment {
         TextView date = v.findViewById(R.id.rideDate);
         TextView time = v.findViewById(R.id.rideTime);
 
-        owner.setText(rideOwner);
+        owner.setText(completeOwnerName);
         start.setText(startName);
         stop.setText(stopName);
         date.setText(rideDate);

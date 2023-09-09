@@ -184,7 +184,6 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onActivityResult(Boolean result) {
                     if (result) {
-                        Toast.makeText(getContext(), "SI", Toast.LENGTH_SHORT).show();
                         launchImagePicker();
                     } else {
                         Toast.makeText(getContext(), "Devi accettare i permessi allo storage del dispositivo", Toast.LENGTH_SHORT).show();
@@ -403,8 +402,16 @@ public class ProfileFragment extends Fragment {
         }else if(carPlate.isEmpty()){
             Toast.makeText(getContext(), "Devi inserire una targa di auto", Toast.LENGTH_SHORT).show();
             return false;
+        }else if(!isValidCarPlate(carPlate.toUpperCase())){
+            Toast.makeText(getContext(), "Devi inserire una targa valida", Toast.LENGTH_SHORT).show();
+            return false;
         }
         return true;
+    }
+
+    public boolean isValidCarPlate(String carPlate){
+        String plateRegex = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
+        return carPlate.matches(plateRegex);
     }
     public boolean checkChangedCarValues(){
         String carPlate = carPlateTxt.getText().toString();

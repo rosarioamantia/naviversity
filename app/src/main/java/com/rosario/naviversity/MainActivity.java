@@ -37,6 +37,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.ktx.Firebase;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -54,17 +55,25 @@ public class MainActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     TextView regTxt;
     static final int BASIC_PERMISSION_CODE = 100;
+    static final String ADMIN_ID = "IUdA8Qqy4zVJJXFX5VEwX0Lxqhs2";
     @Override
     public void onStart(){
         super.onStart();
+        Intent intent;
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null && currentUser.isEmailVerified()){
-            Toast.makeText(getApplicationContext(), "Utente già loggato", Toast.LENGTH_SHORT).show();
-            //Intent intent = new Intent(getApplicationContext(), HomepageActivity.class);
-            Intent intent = new Intent(getApplicationContext(), AdministrationActivity.class);
-            startActivity(intent);
-            finish();
+        if(currentUser != null){
+            if(currentUser.getUid().equals(ADMIN_ID)){
+                intent = new Intent(getApplicationContext(), AdministrationActivity.class);
+                startActivity(intent);
+                finish();
+            }
+            else if(currentUser.isEmailVerified()){
+                intent = new Intent(getApplicationContext(), HomepageActivity.class);
+                startActivity(intent);
+                finish();
+            }
         }
+
     }
 
     @Override
@@ -110,27 +119,29 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    if(!user.isEmailVerified()){
-                                        Toast.makeText(getApplicationContext(), "devi verificare l'email", Toast.LENGTH_SHORT).show();
-                                    }else{
-                                        //Intent i = new Intent(getApplicationContext(), HomepageActivity.class);
-                                        Intent i = new Intent(getApplicationContext(), AdministrationActivity.class);
-                                        startActivity(i);
-                                        finish();
-                                    }
-                                } else {
-                                    // If sign in fails, display a message to the user.
-                                    Toast.makeText(getApplicationContext(), "signInWithEmail:failure", Toast.LENGTH_SHORT).show();
-                                    //updateUI(null);
+                    .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                FirebaseUser currentUser = mAuth.getCurrentUser();
+                                Intent intent;
+                                if(currentUser.getUid().equals(ADMIN_ID)){
+                                    intent = new Intent(getApplicationContext(), AdministrationActivity.class);
+                                    startActivity(intent);
+                                    finish();
                                 }
+                                else if(!currentUser.isEmailVerified()) {
+                                    Toast.makeText(getApplicationContext(), "Devi prima verificare la tua email universitaria", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    intent = new Intent(getApplicationContext(), HomepageActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Problema con la login", Toast.LENGTH_SHORT).show();
                             }
-                        });
+                        }
+                    });
             }
         });
         regTxt.setOnClickListener(new View.OnClickListener() {

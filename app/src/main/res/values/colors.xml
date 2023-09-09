@@ -5,4 +5,5 @@
     <color name="darkBlue">#111f28</color>
     <color name="button_color">#673AB7</color>
     <color name="recycler_row">#A67DEF</color>
+    <color name="light_violet">#C0A1FA</color>
 </resources>

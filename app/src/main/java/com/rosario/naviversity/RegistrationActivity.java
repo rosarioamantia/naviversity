@@ -163,7 +163,7 @@ public class RegistrationActivity extends AppCompatActivity {
                                     fUser.sendEmailVerification()
                                             .addOnCompleteListener(emailTask -> {
                                                 if (emailTask.isSuccessful()) {
-                                                    Toast.makeText(getApplicationContext(), "Ti è stata mandata una e-mail", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(getApplicationContext(), "Ti è stata mandata una e-mail di conferma", Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                 } else {
@@ -368,7 +368,15 @@ public class RegistrationActivity extends AppCompatActivity {
         }else if(carPlate.isEmpty()){
             Toast.makeText(getApplicationContext(), "Devi inserire una targa di auto", Toast.LENGTH_SHORT).show();
             return false;
+        }else if(!isValidCarPlate(carPlate.toUpperCase())){
+            Toast.makeText(getApplicationContext(), "Devi inserire una targa valida", Toast.LENGTH_SHORT).show();
+            return false;
         }
         return true;
+    }
+
+    public boolean isValidCarPlate(String carPlate){
+        String plateRegex = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
+        return carPlate.matches(plateRegex);
     }
 }

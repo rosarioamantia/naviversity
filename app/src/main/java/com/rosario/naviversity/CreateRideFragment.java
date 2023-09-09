@@ -9,9 +9,12 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -72,7 +75,7 @@ public class CreateRideFragment extends Fragment {
     User user;
     FusedLocationProviderClient fusedLocationClient;
     Location currentLocation;
-    private OnMapReadyCallback callback = new OnMapReadyCallback() {
+    private OnMapReadyCallback mapCallback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
             Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
@@ -96,9 +99,8 @@ public class CreateRideFragment extends Fragment {
                         showStopPlaces(googleMap);
                     } else {
                         stop = selectedPlace;
-                        googleMap.clear();
                         View confirmRideCreationView = getLayoutInflater().inflate(R.layout.confirm_ride_creation_dialog, null, false);
-                        showConfirmRideCreationDialog(confirmRideCreationView);
+                        showConfirmRideCreationDialog(confirmRideCreationView, googleMap);
                     }
                 }
             });
@@ -143,11 +145,7 @@ public class CreateRideFragment extends Fragment {
                             public void onSuccess(Location location) {
                                 if(location != null){
                                     currentLocation = location;
-                                    SupportMapFragment mapFragment =
-                                            (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-                                    if (mapFragment != null) {
-                                        mapFragment.getMapAsync(callback);
-                                    }
+                                    reloadGoogleMap(null);
                                 }else{
                                     Toast.makeText(getContext(), "Devi attivare la localizzazione per creare una corsa", Toast.LENGTH_SHORT).show();
                                 }
@@ -158,6 +156,18 @@ public class CreateRideFragment extends Fragment {
                     }
                 });
         requestPermissionLauncher.launch(permissions);
+    }
+
+    public void reloadGoogleMap(GoogleMap googleMap){
+        if(googleMap != null){
+            googleMap.clear();
+        }
+
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(mapCallback);
+        }
     }
 
     @Nullable
@@ -243,10 +253,16 @@ public class CreateRideFragment extends Fragment {
         double lLatitude = place.getLatitude();
         double lLongitude = place.getLongitude();
         LatLng placePosition = new LatLng(lLatitude, lLongitude);
-        googleMap.addMarker(new MarkerOptions().position(placePosition).title(place.getName())).setSnippet("Tocca qui per selezionare il punto di " + placeType);
+        googleMap.addMarker(new MarkerOptions().position(placePosition).title(place.getName())).setSnippet("Tocca qui per selezionare come punto di " + placeType);
     }
-    private void showConfirmRideCreationDialog(View confirmRideCreationView){
+    private void showConfirmRideCreationDialog(View confirmRideCreationView, GoogleMap googleMap){
         dialog = new BottomSheetDialog(getContext());
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                reloadGoogleMap(googleMap);
+            }
+        });
         dialog.setContentView(confirmRideCreationView);
         dateText = confirmRideCreationView.findViewById(R.id.rideDate);
         timeText = confirmRideCreationView.findViewById(R.id.rideTime);
@@ -313,6 +329,8 @@ public class CreateRideFragment extends Fragment {
                 if(user != null && user.isCarOwner()){
                     writeNewRide();
                     dialog.hide();
+                    //reloadFragment(); //TODO cancella
+                    reloadGoogleMap(googleMap);
                 }else{
                     Toast.makeText(getContext(), "Prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                 }
@@ -320,11 +338,17 @@ public class CreateRideFragment extends Fragment {
         });
     }
 
+    public void reloadFragment(){
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        CreateRideFragment newFragment = new CreateRideFragment(); // Crea una nuova istanza del fragment
+        transaction.replace(R.id.map, newFragment); // Sostituisci il fragment esistente con il nuovo
+        //transaction.addToBackStack(null); // Aggiungi la transazione allo stack indietro, se necessario :TODO cancellare ma appunta
+        transaction.commit();
+    }
+
     private void fillDialogData(View view){
-        TextView ownerTxt = view.findViewById(R.id.rideOwner);
         TextView startTxt = view.findViewById(R.id.rideStart);
         TextView stopTxt = view.findViewById(R.id.rideStop);
-        ownerTxt.setText("idUtenteLoggato");
         startTxt.setText(start.getName());
         stopTxt.setText(stop.getName());
     }
