@@ -20,7 +20,6 @@ public class Ride implements Serializable {
     String date;
     String time;
     HashMap<String, User> members;
-    boolean completed = false;
     Car car;
 
     public Ride(Place start, Place stop, String owner, String date, String time, Car car, HashMap<String, User> members){
@@ -90,14 +89,6 @@ public class Ride implements Serializable {
         this.id = id;
     }
 
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
-    }
-
     public Car getCar() {
         return car;
     }
@@ -115,7 +106,6 @@ public class Ride implements Serializable {
         result.put("date", date);
         result.put("time", time);
         result.put("members", members);
-        result.put("completed", completed);
         result.put("car", car);
 
         return result;

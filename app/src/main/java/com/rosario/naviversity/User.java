@@ -1,12 +1,15 @@
 package com.rosario.naviversity;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreExtraProperties
 public class User implements Serializable {
+    @Exclude
     private String id;
     private String name;
     private String surname;
@@ -94,6 +97,10 @@ public class User implements Serializable {
 
     public void setRatingReceived(int ratingReceived) {
         this.ratingReceived = ratingReceived;
+    }
+    @Exclude
+    public String getCompleteName(){
+        return name + " " + surname;
     }
 
     @Exclude

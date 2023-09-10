@@ -8,10 +8,14 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -64,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MapsFragment extends Fragment {
+    ArrayList<Ride> listRides = new ArrayList<>();
     final static int MAX_RIDE_MEMBERS_ALLOWED = 4;
     Place start;
     Place stop;
@@ -82,7 +87,7 @@ public class MapsFragment extends Fragment {
     FirebaseDatabase mDatabase;
     DatabaseReference rideReference;
     Ride ride;
-    BottomSheetDialog dialog;
+    BottomSheetDialog confirmDialog;
     FirebaseAuth mAuth;
     DatabaseReference dbReference;
     AutoCompleteTextView startTxt;
@@ -106,7 +111,7 @@ public class MapsFragment extends Fragment {
             String rideOwnerId = ride.getOwner();
             User rideOwner = ride.getMembers().get(rideOwnerId);
             String completeOwnerName = rideOwner.getName() + " " + rideOwner.getSurname();
-            mark.setSnippet(ride.getDate() + " " + ride.getTime() + " - organizzatore: " + completeOwnerName);
+            mark.setSnippet("Tocca per visualizzare le opzioni disponibili");
             mark.showInfoWindow();
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
             googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -114,18 +119,25 @@ public class MapsFragment extends Fragment {
                 public boolean onMarkerClick(Marker marker) {
                     mark.hideInfoWindow();
                     View confirmRideView = getLayoutInflater().inflate(R.layout.confirm_ride_dialog, null, false);
-                    createDialog(confirmRideView, rideOwner);
-                    Button btnConfirm = confirmRideView.findViewById(R.id.btnConfirm);
-                    btnConfirm.setOnClickListener(new View.OnClickListener() {
+
+                    ConfirmRideRecyclerViewAdapter adapter = new ConfirmRideRecyclerViewAdapter(getContext(), listRides, confirmDialog);
+                    RecyclerView recyclerView = confirmRideView.findViewById(R.id.mRecyclerView);
+                    recyclerView.setAdapter(adapter);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                    adapter.notifyDataSetChanged();
+
+                    confirmDialog.setContentView(confirmRideView);
+                    confirmDialog.show();
+
+                    confirmDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override
-                        public void onClick(View view) {
-                            updateRideMembers(ride);
-                            dialog.dismiss();
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            reloadFragment();
                         }
                     });
 
                     //controlla a che serve
-                    dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                    confirmDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                     return false;
                 }
             });
@@ -142,7 +154,7 @@ public class MapsFragment extends Fragment {
         cardSearch = view.findViewById(R.id.cardSearch);
         dateText = view.findViewById(R.id.date);
         timeText = view.findViewById(R.id.time);
-        dialog = new BottomSheetDialog(getContext());
+        confirmDialog = new BottomSheetDialog(getContext());
         mDatabase = FirebaseDatabase.getInstance();
         listStart = new ArrayList<Place>();
         listStop = new ArrayList<Place>();
@@ -180,7 +192,6 @@ public class MapsFragment extends Fragment {
                 start = (Place) adapterView.getItemAtPosition(i);
             }
         });
-
         placeReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -289,12 +300,16 @@ public class MapsFragment extends Fragment {
                                                                 if(ride != null){
                                                                     ride.setId(ds.getKey());
                                                                     if(checkIsRideEligible(ride)){
-                                                                        mapFragment.getMapAsync(callback);
-                                                                        return;
+                                                                        listRides.add(ride);
                                                                     }
                                                                 }
                                                             }
-                                                            Toast.makeText(getContext(), "Nessuna corsa trovata", Toast.LENGTH_SHORT).show();
+                                                            if(!listRides.isEmpty()){
+                                                                mapFragment.getMapAsync(callback);
+                                                            }else{
+                                                                //TODO controlla gestione
+                                                                Toast.makeText(getContext(), "Nessuna corsa trovata", Toast.LENGTH_SHORT).show();
+                                                            }
                                                         }
                                                         @Override
                                                         public void onCancelled(@NonNull DatabaseError error) {
@@ -353,29 +368,32 @@ public class MapsFragment extends Fragment {
         getLastLocation(view);
 
     }
-    private void createDialog(View v, User rideOwner){
-        fillDialogData(v, rideOwner);
-        dialog.setContentView(v);
-        dialog.show();
-    }
-    private void fillDialogData(View v, User rideOwner){ // modifica owner: metti ratingbar riempita con i suoi dati (OYEAHHHH)
-        String startName = ride.getStart().getName();
-        String stopName = ride.getStop().getName();
-        String rideDate = ride.getDate();
-        String rideTime = ride.getTime();
 
-        TextView owner = v.findViewById(R.id.rideOwner);
-        TextView start = v.findViewById(R.id.rideStart);
-        TextView stop = v.findViewById(R.id.rideStop);
-        TextView date = v.findViewById(R.id.rideDate);
-        TextView time = v.findViewById(R.id.rideTime);
-
-        owner.setText(completeOwnerName);
-        start.setText(startName);
-        stop.setText(stopName);
-        date.setText(rideDate);
-        time.setText(rideTime);
+    public void reloadFragment(){
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        MapsFragment newFragment = new MapsFragment();
+        transaction.replace(R.id.map, newFragment);
+        //transaction.addToBackStack(null); // Aggiungi la transazione allo stack indietro, se necessario :TODO cancellare ma appunta
+        transaction.commit();
     }
+//    private void fillDialogData(View v, User rideOwner){ // modifica owner: metti ratingbar riempita con i suoi dati (OYEAHHHH)
+//        String startName = ride.getStart().getName();
+//        String stopName = ride.getStop().getName();
+//        String rideDate = ride.getDate();
+//        String rideTime = ride.getTime();
+//
+//        TextView owner = v.findViewById(R.id.rideOwner);
+//        TextView start = v.findViewById(R.id.rideStart);
+//        TextView stop = v.findViewById(R.id.rideStop);
+//        TextView date = v.findViewById(R.id.rideDate);
+//        TextView time = v.findViewById(R.id.rideTime);
+//
+//        //owner.setText(completeOwnerName);
+//        start.setText(startName);
+//        stop.setText(stopName);
+//        date.setText(rideDate);
+//        time.setText(rideTime);
+//    }
     public boolean checkIsTimeEligible(String pickerTime, String rideTime){
         LocalTime superiorLimit = LocalTime.parse(pickerTime).plus(31, ChronoUnit.MINUTES);
         LocalTime inferiorLimit = LocalTime.parse(pickerTime).minus(31, ChronoUnit.MINUTES);
