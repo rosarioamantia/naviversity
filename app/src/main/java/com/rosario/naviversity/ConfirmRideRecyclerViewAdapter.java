@@ -1,19 +1,19 @@
 package com.rosario.naviversity;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -91,6 +91,9 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
                     public void onDataChange(DataSnapshot snapshot) {
                         User user = snapshot.getValue(User.class);
                         user.setVotedOwner("false");
+                        user.setName(null);
+                        user.setSurname(null);
+                        user.setPhone(null);
                         HashMap<String, User> members = ride.getMembers();
                         members.put(fAuth.getUid(), user);
                         ride.setMembers(members);
@@ -106,7 +109,8 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
                     }
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
+                        Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, error.getMessage());
                     }
                 });
             }
@@ -126,12 +130,12 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
         public MyViewHolder(@NonNull View itemView){
             super(itemView);
             ownerTxt = itemView.findViewById(R.id.ride_owner);
-            startTxt = itemView.findViewById(R.id.ride_start);
-            stopTxt = itemView.findViewById(R.id.ride_stop);
-            dateTxt = itemView.findViewById(R.id.ride_date);
-            timeTxt = itemView.findViewById(R.id.ride_time);
+            startTxt = itemView.findViewById(R.id.ride_start_txt);
+            stopTxt = itemView.findViewById(R.id.ride_stop_txt);
+            dateTxt = itemView.findViewById(R.id.ride_date_txt);
+            timeTxt = itemView.findViewById(R.id.ride_time_txt);
             ratingBar = itemView.findViewById(R.id.rating_owner);
-            confirmBtn = itemView.findViewById(R.id.btn_confirm);
+            confirmBtn = itemView.findViewById(R.id.delete_btn);
         }
     }
     public void initializeButtons(Ride ride, ConfirmRideRecyclerViewAdapter.MyViewHolder holder){
@@ -213,7 +217,7 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context.getApplicationContext(), "grazie per il feedback", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context.getApplicationContext(), "Grazie per il feedback", Toast.LENGTH_SHORT).show();
                 dbReference.child("user").child(RideOwnerId).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -238,12 +242,15 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
+                        Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, error.getMessage());
                     }
                 });
             }
         });
     }
+
+    // TODO cancella
     public boolean isRidePassed(String date, String time){
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
         LocalDate rideDate =  LocalDate.parse(date, dateFormatter);

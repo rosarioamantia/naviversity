@@ -51,11 +51,11 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     Button btnLogin;
-    TextInputEditText editTextEmail, editTextPassword;
+    EditText editTextEmail, editTextPassword;
     FirebaseAuth mAuth;
     TextView regTxt;
     static final int BASIC_PERMISSION_CODE = 100;
-    static final String ADMIN_ID = "IUdA8Qqy4zVJJXFX5VEwX0Lxqhs2";
+    static final String ADMIN_ID = "TXk8jICPv7OF647FCW12XrLKtJu1";
     @Override
     public void onStart(){
         super.onStart();

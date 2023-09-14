@@ -1,10 +1,10 @@
 package com.rosario.naviversity;
 
+import static android.content.ContentValues.TAG;
+
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -15,16 +15,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -33,12 +30,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
@@ -51,7 +45,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
@@ -142,8 +135,6 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-
-                        // There are no request codes
                         Intent data = result.getData();
                         profileImageUri = data.getData();
                         fUser = mAuth.getCurrentUser();
@@ -165,7 +156,7 @@ public class ProfileFragment extends Fragment {
                     @Override
                     public void onSuccess(Uri uri) {
                         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                .setPhotoUri(profileImageUri)  //TODO valuta se cambiare con uri parametro (riga sopra)
+                                .setPhotoUri(profileImageUri)
                                 .build();
                         fUser.updateProfile(profileUpdates);
                         progressBar.setVisibility(View.GONE);
@@ -228,7 +219,7 @@ public class ProfileFragment extends Fragment {
         carColors = getResources().getStringArray(R.array.car_colors);
         carModels = getResources().getStringArray(R.array.car_models);
         btnModify = view.findViewById(R.id.btn_modifiy);
-        btnConfirm = view.findViewById(R.id.btn_confirm);
+        btnConfirm = view.findViewById(R.id.delete_btn);
         carModelTxt = view.findViewById(R.id.car_model_txt);
         carColorTxt = view.findViewById(R.id.car_color_txt);
         carPlateTxt = view.findViewById(R.id.car_plate_txt);
@@ -283,7 +274,8 @@ public class ProfileFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, error.getMessage());
             }
         });
 

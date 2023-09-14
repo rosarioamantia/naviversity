@@ -34,7 +34,9 @@
         <EditText
             android:id="@+id/place_name"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:singleLine="true"
+            android:maxLength="50"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -93,7 +95,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
-        android:id="@+id/btn_confirm"
+        android:id="@+id/delete_btn"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="90dp"

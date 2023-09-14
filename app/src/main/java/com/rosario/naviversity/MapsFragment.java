@@ -1,5 +1,7 @@
 package com.rosario.naviversity;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -17,9 +19,11 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.DatabaseErrorHandler;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +74,7 @@ import java.util.Map;
 public class MapsFragment extends Fragment {
     ArrayList<Ride> listRides = new ArrayList<>();
     final static int MAX_RIDE_MEMBERS_ALLOWED = 4;
+    final static int PERMISSION_DENIED_ERROR_CODE = -3;
     Place start;
     Place stop;
     Button btnSearch;
@@ -105,7 +110,7 @@ public class MapsFragment extends Fragment {
             googleMap.getUiSettings().setAllGesturesEnabled(true);
             cardSearch.setVisibility(View.GONE);
 
-            //inserisci marker
+            //insert marker
             LatLng startCoordinates = new LatLng(start.getLatitude(), start.getLongitude());
             mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
             String rideOwnerId = ride.getOwner();
@@ -114,6 +119,7 @@ public class MapsFragment extends Fragment {
             mark.setSnippet("Tocca per visualizzare le opzioni disponibili");
             mark.showInfoWindow();
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
+
             googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
@@ -210,7 +216,8 @@ public class MapsFragment extends Fragment {
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, error.getMessage());
             }
         });
         dateText.setOnClickListener(new View.OnClickListener() {
@@ -313,7 +320,8 @@ public class MapsFragment extends Fragment {
                                                         }
                                                         @Override
                                                         public void onCancelled(@NonNull DatabaseError error) {
-
+                                                            Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                                                            Log.e(TAG, error.getMessage());
                                                         }
                                                     });
                                                 }
@@ -321,6 +329,7 @@ public class MapsFragment extends Fragment {
                                         });
                                     }
                                 }else{
+                                    btnSearch.setEnabled(false);
                                     Toast.makeText(getContext(), "Devi attivare la localizzazione", Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -424,7 +433,8 @@ public class MapsFragment extends Fragment {
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, error.getMessage());
             }
         });
     }

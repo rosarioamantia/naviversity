@@ -1,34 +1,27 @@
 package com.rosario.naviversity;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.view.menu.MenuView;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.constraintlayout.widget.Constraints;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,7 +84,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         TextView carTxt;
         TextView dateTxt;
         TextView timeTxt;
-        ImageView rateBtn, deleteBtn;
+        Button rateBtn, deleteBtn;
         //CardView rateCard;
 
         public MyViewHolder(@NonNull View itemView){
@@ -113,29 +106,13 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         String rideDate = ride.getDate();
 
         if(isRidePassed(rideDate, rideTime)){
-            holder.deleteBtn.setVisibility(View.GONE);
-            if(currentUserIsRideOwner(currentUserId, rideOwnerId)){
-                holder.rateBtn.setVisibility(View.GONE);
-                ConstraintLayout constraintLayout = holder.itemView.findViewById(R.id.card_layout);
-                System.out.println(constraintLayout.getChildCount());
-
-                ConstraintSet constraintSet = new ConstraintSet();
-                constraintSet.clone(constraintLayout);
-                constraintSet.connect(R.id.date_icon, ConstraintSet.BOTTOM, R.id.card_layout, ConstraintSet.BOTTOM, 20);
-                constraintSet.applyTo(constraintLayout);
-
-                /*ViewGroup.LayoutParams layoutParams = holder.itemView.findViewById(R.id.card_layout).getLayoutParams();
-                layoutParams.height = 320;
-                holder.itemView.findViewById(R.id.card_layout).setLayoutParams(layoutParams);
-                */
-            }else if(currentUserAlreadyVoted(ride)) {
-                holder.rateBtn.setVisibility(View.GONE);
-            }
-            else{
+            holder.deleteBtn.setEnabled(false);
+            if(currentUserIsRideOwner(currentUserId, rideOwnerId) || currentUserAlreadyVoted(ride)){
+                holder.rateBtn.setEnabled(false);
+            }else{
                 holder.rateBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        //initializeRatingCard(view, ride, holder);
                         initializeRatingCard(ride, holder);
                     }
                 });
@@ -143,7 +120,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         }else{
             Map<String, Object> childUpdates = new HashMap<>();
             if(currentUserIsRideOwner(currentUserId, rideOwnerId)){
-                holder.rateBtn.setVisibility(View.GONE);
+                holder.rateBtn.setEnabled(false);
                 holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -166,12 +143,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                     }
                 });
 
-                holder.rateBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Toast.makeText(context.getApplicationContext(), "La corsa deve ancora avvenire", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                holder.rateBtn.setEnabled(false);
             }
         }
     }
@@ -208,12 +180,13 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
                         dbReference.updateChildren(childUpdates);
                         rateCard.setVisibility(View.GONE);
-                        holder.rateBtn.setVisibility(View.GONE);
+                        holder.rateBtn.setEnabled(false);
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
+                        Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, error.getMessage());
                     }
                 });
             }

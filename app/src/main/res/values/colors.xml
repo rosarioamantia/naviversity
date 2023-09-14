@@ -2,8 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="darkBlue">#111f28</color>
-    <color name="button_color">#673AB7</color>
-    <color name="recycler_row">#A67DEF</color>
-    <color name="light_violet">#C0A1FA</color>
+    <color name="dark_blue">#0078BC</color>
+    <color name="light_blue">#AED2E6</color>
 </resources>

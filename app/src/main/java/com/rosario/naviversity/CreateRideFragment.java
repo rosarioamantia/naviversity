@@ -1,6 +1,6 @@
 package com.rosario.naviversity;
 
-import static android.content.Context.LOCATION_SERVICE;
+import static android.content.ContentValues.TAG;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,7 +52,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -104,7 +108,6 @@ public class CreateRideFragment extends Fragment {
                     }
                 }
             });
-
         }
     };
 
@@ -191,7 +194,8 @@ public class CreateRideFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, error.getMessage());
             }
         });
 
@@ -223,7 +227,8 @@ public class CreateRideFragment extends Fragment {
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, error.getMessage());
             }
         });
     }
@@ -255,6 +260,58 @@ public class CreateRideFragment extends Fragment {
         LatLng placePosition = new LatLng(lLatitude, lLongitude);
         googleMap.addMarker(new MarkerOptions().position(placePosition).title(place.getName())).setSnippet("Tocca qui per selezionare come punto di " + placeType);
     }
+
+    public boolean checkDateTime(View confirmRideCreationView){
+        TextInputLayout dateInputLayout = confirmRideCreationView.findViewById(R.id.dateInputLayout);
+        TextInputLayout timeInputLayout = confirmRideCreationView.findViewById(R.id.timeInputLayout);
+        timeInputLayout.setErrorIconDrawable(null);
+        dateInputLayout.setErrorIconDrawable(null);
+
+        if(dateText.getText().toString().matches("")){
+            dateInputLayout.setError("Inserisci un valore");
+            dateInputLayout.setErrorIconDrawable(null);
+            return false;
+        }else {
+            if (dateInputLayout.getError() != null) {
+                dateInputLayout.setError(null);
+            }
+        }
+        if(timeText.getText().toString().matches("")){
+            timeInputLayout.setError("Inserisci un valore");
+            timeInputLayout.setErrorIconDrawable(null);
+            return false;
+        }else{
+            if (timeInputLayout.getError() != null) {
+                timeInputLayout.setError(null);
+            }
+        }
+        if(!checkFutureDateTime(dateInputLayout, timeInputLayout)){
+            return false;
+        }
+        return true;
+    }
+
+    public boolean checkFutureDateTime(TextInputLayout dateInputLayout, TextInputLayout timeInputLayout){
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+
+        LocalDate selectedDate = LocalDate.parse(dateText.getText().toString(), dateFormatter);
+        LocalTime selectedTime = LocalTime.parse(timeText.getText().toString());
+        LocalDate actualDate = LocalDate.now();
+        LocalTime actualTime = LocalTime.now();
+        if(selectedDate.isAfter(actualDate)) {
+            return true;
+        }else if(selectedDate.isEqual(actualDate)){
+            if(selectedTime.isAfter(actualTime)) {
+                return true;
+            }else{
+                timeInputLayout.setError("Orario non valido");
+            }
+        }else{
+            dateInputLayout.setError("Data non valida");
+        }
+        return false;
+    }
+
     private void showConfirmRideCreationDialog(View confirmRideCreationView, GoogleMap googleMap){
         dialog = new BottomSheetDialog(getContext());
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -304,46 +361,18 @@ public class CreateRideFragment extends Fragment {
         btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TextInputLayout dateInputLayout = confirmRideCreationView.findViewById(R.id.dateInputLayout);
-                TextInputLayout timeInputLayout = confirmRideCreationView.findViewById(R.id.timeInputLayout);
-                if(dateText.getText().toString().matches("")){
-                    dateInputLayout.setError("Inserisci un valore");
-                    dateInputLayout.setErrorIconDrawable(null);
-                    return;
-                }else {
-                    if (dateInputLayout.getError() != null) {
-                        dateInputLayout.setError(null);
+                //if(checkDateTime(confirmRideCreationView)){ //TODO cambia per aggiungere controllo corretto sui valori di date e time
+                if(true){
+                    if(user != null && user.isCarOwner()){
+                        writeNewRide();
+                        dialog.hide();
+                        reloadGoogleMap(googleMap);
+                    }else{
+                        Toast.makeText(getContext(), "Prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                     }
-                }
-                if(timeText.getText().toString().matches("")){
-                    timeInputLayout.setError("Inserisci un valore");
-                    timeInputLayout.setErrorIconDrawable(null);
-                    return;
-                }else{
-                    if (timeInputLayout.getError() != null) {
-                        timeInputLayout.setError(null);
-                    }
-                }
-
-                // TODO aggiungi con gestione eccezioni
-                if(user != null && user.isCarOwner()){
-                    writeNewRide();
-                    dialog.hide();
-                    //reloadFragment(); //TODO cancella
-                    reloadGoogleMap(googleMap);
-                }else{
-                    Toast.makeText(getContext(), "Prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                 }
             }
         });
-    }
-
-    public void reloadFragment(){
-        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-        CreateRideFragment newFragment = new CreateRideFragment(); // Crea una nuova istanza del fragment
-        transaction.replace(R.id.map, newFragment); // Sostituisci il fragment esistente con il nuovo
-        //transaction.addToBackStack(null); // Aggiungi la transazione allo stack indietro, se necessario :TODO cancellare ma appunta
-        transaction.commit();
     }
 
     private void fillDialogData(View view){

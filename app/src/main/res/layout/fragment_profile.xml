@@ -22,8 +22,8 @@
 
         <ImageView
             android:id="@+id/profile_image"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="30dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -55,11 +55,11 @@
             android:id="@+id/textView10"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
             android:layout_marginTop="60dp"
             android:text="Nome"
             android:textSize="15sp"
             android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/profile_image" />
 
@@ -70,6 +70,7 @@
             android:layout_marginTop="5dp"
             android:text="Nome User"
             android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
             app:layout_constraintStart_toStartOf="@+id/textView10"
             app:layout_constraintTop_toBottomOf="@+id/textView10" />
 
@@ -78,10 +79,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:textSize="15sp"
             android:text="Cognome"
+            android:textSize="15sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/user_name"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
+            app:layout_constraintStart_toStartOf="@+id/textView10"
             app:layout_constraintTop_toBottomOf="@+id/user_name" />
 
         <TextView
@@ -89,8 +91,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:textSize="20sp"
             android:text="Cognome User"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/textView12"
             app:layout_constraintStart_toStartOf="@+id/textView12"
             app:layout_constraintTop_toBottomOf="@+id/textView12" />
 
@@ -102,7 +105,8 @@
             android:text="E-mail"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/user_surname"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
+            app:layout_constraintStart_toStartOf="@+id/textView10"
             app:layout_constraintTop_toBottomOf="@+id/user_surname" />
 
         <TextView
@@ -112,6 +116,7 @@
             android:layout_marginTop="5dp"
             android:text="E-mail User"
             android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/textView16"
             app:layout_constraintStart_toStartOf="@+id/textView16"
             app:layout_constraintTop_toBottomOf="@+id/textView16" />
 
@@ -121,17 +126,19 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:checked="false"
-            android:textStyle="bold"
-            android:textSize="15sp"
             android:text="Possiedo un'automobile"
-            app:layout_constraintStart_toStartOf="@+id/textView16"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
+            app:layout_constraintStart_toStartOf="@+id/textView10"
             app:layout_constraintTop_toBottomOf="@+id/user_mail" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/car_constraint_layout"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/car_switch"
             app:layout_constraintStart_toStartOf="@+id/car_switch"
             app:layout_constraintTop_toBottomOf="@+id/car_switch">
 
@@ -140,9 +147,9 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:hint="Modello"
                 android:enabled="false"
+                android:hint="Modello"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -159,10 +166,10 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:enabled="false"
                 android:layout_marginTop="5dp"
+                android:enabled="false"
                 android:hint="Colore"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/car_model_input_layout">
 
@@ -178,10 +185,10 @@
                 android:id="@+id/car_plate_input_layout"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
-                android:hint="Targa"
                 android:enabled="false"
+                android:hint="Targa"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/car_color_input_layout">
 
@@ -196,15 +203,15 @@
                 android:id="@+id/btn_modifiy"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:text="Modifica"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/car_plate_input_layout" />
 
             <Button
-                android:id="@+id/btn_confirm"
+                android:id="@+id/delete_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
