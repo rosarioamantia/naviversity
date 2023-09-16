@@ -33,6 +33,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -73,12 +74,12 @@ import java.util.Map;
 
 public class MapsFragment extends Fragment {
     ArrayList<Ride> listRides = new ArrayList<>();
-    final static int MAX_RIDE_MEMBERS_ALLOWED = 4;
-    final static int PERMISSION_DENIED_ERROR_CODE = -3;
+    final static int MAX_RIDE_MEMBERS_ALLOWED = 4; //owner included
     Place start;
     Place stop;
-    Button btnSearch;
-    CardView cardSearch;
+    Button btnSearch, btnRepeatSearch;
+    ImageButton btnClose;
+    CardView searchCard;
     List<Place> listStart;
     List<Place> listStop;
     ArrayAdapter<Place> startAdapter;
@@ -88,7 +89,7 @@ public class MapsFragment extends Fragment {
     TextInputEditText timeText;
     TimePickerDialog timePicker;
     TextInputEditText dateText;
-    Marker mark;
+    Marker positionMarker;
     FirebaseDatabase mDatabase;
     DatabaseReference rideReference;
     Ride ride;
@@ -103,27 +104,27 @@ public class MapsFragment extends Fragment {
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 googleMap.setMyLocationEnabled(true);
                 googleMap.setBuildingsEnabled(false);
             }
             googleMap.getUiSettings().setAllGesturesEnabled(true);
-            cardSearch.setVisibility(View.GONE);
+            searchCard.setVisibility(View.GONE);
+            btnRepeatSearch.setVisibility(View.VISIBLE);
 
             //insert marker
             LatLng startCoordinates = new LatLng(start.getLatitude(), start.getLongitude());
-            mark = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
-            String rideOwnerId = ride.getOwner();
-            User rideOwner = ride.getMembers().get(rideOwnerId);
-            String completeOwnerName = rideOwner.getName() + " " + rideOwner.getSurname();
-            mark.setSnippet("Tocca per visualizzare le opzioni disponibili");
-            mark.showInfoWindow();
+            positionMarker = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
+            positionMarker.setSnippet("Tocca per visualizzare le corse disponibili");
+
+            positionMarker.showInfoWindow();
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
 
             googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-                    mark.hideInfoWindow();
+                    positionMarker.hideInfoWindow();
                     View confirmRideView = getLayoutInflater().inflate(R.layout.confirm_ride_dialog, null, false);
 
                     ConfirmRideRecyclerViewAdapter adapter = new ConfirmRideRecyclerViewAdapter(getContext(), listRides, confirmDialog);
@@ -138,13 +139,33 @@ public class MapsFragment extends Fragment {
                     confirmDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialogInterface) {
-                            reloadFragment();
+                            searchCard.setVisibility(View.VISIBLE);
+                            //positionMarker = null;
+                            btnRepeatSearch.setVisibility(View.GONE);
+                            btnClose.setVisibility(View.GONE);
                         }
                     });
 
                     //controlla a che serve
                     confirmDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                     return false;
+                }
+            });
+
+            btnRepeatSearch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    btnRepeatSearch.setVisibility(View.GONE);
+                    searchCard.setVisibility(View.VISIBLE);
+                    btnClose.setVisibility(View.VISIBLE);
+
+                    btnClose.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            searchCard.setVisibility(View.GONE);
+                            btnRepeatSearch.setVisibility(View.VISIBLE);
+                        }
+                    });
                 }
             });
         }
@@ -156,8 +177,10 @@ public class MapsFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
-        btnSearch = view.findViewById(R.id.btnSearch);
-        cardSearch = view.findViewById(R.id.cardSearch);
+        btnSearch = view.findViewById(R.id.btn_search);
+        btnRepeatSearch = view.findViewById(R.id.btn_repeat_search);
+        btnClose = view.findViewById(R.id.btn_close);
+        searchCard = view.findViewById(R.id.search_card);
         dateText = view.findViewById(R.id.date);
         timeText = view.findViewById(R.id.time);
         confirmDialog = new BottomSheetDialog(getContext());
@@ -174,6 +197,7 @@ public class MapsFragment extends Fragment {
         stopTxt = view.findViewById(R.id.stop_txt);
         startTxt.setAdapter(startAdapter);
         stopTxt.setAdapter(stopAdapter);
+        btnRepeatSearch.setVisibility(View.GONE);
         startLayout = view.findViewById(R.id.start_layout);
         stopLayout = view.findViewById(R.id.stop_layout);
         timeLayout = view.findViewById(R.id.time_layout);
@@ -220,6 +244,7 @@ public class MapsFragment extends Fragment {
                 Log.e(TAG, error.getMessage());
             }
         });
+        dateText.setText("17/9/2023");
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -239,6 +264,7 @@ public class MapsFragment extends Fragment {
                 datePicker.show();
             }
         });
+        timeText.setText("21:00");
         timeText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -259,15 +285,17 @@ public class MapsFragment extends Fragment {
     }
 
     private void getLastLocation(View view){
-        String[] permissions = {android.Manifest.permission.ACCESS_FINE_LOCATION/*, Manifest.permission.ACCESS_COARSE_LOCATION*/};
+        String[] permissions = {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
 
         ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 result -> {
                     Boolean fineLocationGranted = result.getOrDefault(
                             android.Manifest.permission.ACCESS_FINE_LOCATION, false);
+                    Boolean coarseLocationGranted = result.getOrDefault(
+                            android.Manifest.permission.ACCESS_FINE_LOCATION, false);
 
-                    if (fineLocationGranted) {
+                    if (fineLocationGranted && coarseLocationGranted) {
                         //aggiorna posizione
                         LocationRequest lr = LocationRequest.create();
                         lr.setInterval(100);
@@ -280,8 +308,7 @@ public class MapsFragment extends Fragment {
                             }
                         };
 
-                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED/* &&
-                                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED*/){
+                        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                             return;
                         }
                         fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
@@ -298,6 +325,7 @@ public class MapsFragment extends Fragment {
                                         btnSearch.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View btnView) {
+                                                listRides.clear();
                                                 if(checkSearchValues(view)){
                                                     rideReference.addValueEventListener(new ValueEventListener() {
                                                         @Override
@@ -306,7 +334,7 @@ public class MapsFragment extends Fragment {
                                                                 ride = ds.getValue(Ride.class);
                                                                 if(ride != null){
                                                                     ride.setId(ds.getKey());
-                                                                    if(checkIsRideEligible(ride)){
+                                                                    if(/*true*/ checkIsRideEligible(ride)){ //TODO scommenta
                                                                         listRides.add(ride);
                                                                     }
                                                                 }
@@ -330,16 +358,16 @@ public class MapsFragment extends Fragment {
                                     }
                                 }else{
                                     btnSearch.setEnabled(false);
-                                    Toast.makeText(getContext(), "Devi attivare la localizzazione", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Devi attivare la localizzazione per cercare una corsa", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
                     } else {
-                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione esatta", Toast.LENGTH_SHORT).show();
                         btnSearch.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View btnView) {
-                                Toast.makeText(getContext(), "Devi accettare i permessi alla posizione per fare una ricerca", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Devi accettare i permessi alla posizione esatta per fare una ricerca", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -375,34 +403,7 @@ public class MapsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
         getLastLocation(view);
-
     }
-
-    public void reloadFragment(){
-        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-        MapsFragment newFragment = new MapsFragment();
-        transaction.replace(R.id.map, newFragment);
-        //transaction.addToBackStack(null); // Aggiungi la transazione allo stack indietro, se necessario :TODO cancellare ma appunta
-        transaction.commit();
-    }
-//    private void fillDialogData(View v, User rideOwner){ // modifica owner: metti ratingbar riempita con i suoi dati (OYEAHHHH)
-//        String startName = ride.getStart().getName();
-//        String stopName = ride.getStop().getName();
-//        String rideDate = ride.getDate();
-//        String rideTime = ride.getTime();
-//
-//        TextView owner = v.findViewById(R.id.rideOwner);
-//        TextView start = v.findViewById(R.id.rideStart);
-//        TextView stop = v.findViewById(R.id.rideStop);
-//        TextView date = v.findViewById(R.id.rideDate);
-//        TextView time = v.findViewById(R.id.rideTime);
-//
-//        //owner.setText(completeOwnerName);
-//        start.setText(startName);
-//        stop.setText(stopName);
-//        date.setText(rideDate);
-//        time.setText(rideTime);
-//    }
     public boolean checkIsTimeEligible(String pickerTime, String rideTime){
         LocalTime superiorLimit = LocalTime.parse(pickerTime).plus(31, ChronoUnit.MINUTES);
         LocalTime inferiorLimit = LocalTime.parse(pickerTime).minus(31, ChronoUnit.MINUTES);

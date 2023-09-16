@@ -217,6 +217,7 @@
                 <EditText
                     android:id="@+id/car_plate_txt"
                     android:layout_width="match_parent"
+                    android:singleLine="true"
                     android:layout_height="match_parent"
                     android:hint="Targa"
                     android:maxLength="7" />

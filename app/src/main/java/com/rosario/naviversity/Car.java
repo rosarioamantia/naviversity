@@ -41,4 +41,7 @@ public class Car {
     public void setColor(String color) {
         this.color = color;
     }
+    public String getCompleteName(){
+        return this.model + " " + this.color + " (" + this.plate + ") ";
+    }
 }

@@ -33,7 +33,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -101,7 +103,7 @@ public class ProfileFragment extends Fragment {
      * this fragment using the provided parameters.
      *
      * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param param2 Parameter 2.\
      * @return A new instance of fragment ProfileFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -283,7 +285,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 mAuth.signOut();
-                Toast.makeText(getContext(), "Utente logout", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Hai eseguito il logout", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getContext(), MainActivity.class);
                 startActivity(intent);
             }
@@ -302,9 +304,6 @@ public class ProfileFragment extends Fragment {
                     carConstraintLayout.setVisibility(View.GONE);
                     if(currentUser.getCar() != null){
                         deleteUserCar();
-                        carModelTxt.setText(null);
-                        carColorTxt.setText(null);
-                        carPlateTxt.setText(null);
                     }
                 }
             }
@@ -338,6 +337,7 @@ public class ProfileFragment extends Fragment {
                             carModelLayout.setEnabled(false);
                             carColorLayout.setEnabled(false);
                             carPlateLayout.setEnabled(false);
+                            ratingBar.setVisibility(View.VISIBLE);
                         }
                     }
                 });
@@ -345,14 +345,21 @@ public class ProfileFragment extends Fragment {
         });
     }
     public void deleteUserCar(){
+        ratingBar.setVisibility(View.GONE);
         currentUser.setCar(null);
         currentUser.setCarOwner(false);
         Map<String, Object> userValues = currentUser.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
         childUpdates.put("/user/" + currentUser.getId() , userValues);
-        dbReference.updateChildren(childUpdates);
-        Toast.makeText(getContext(), "Automobile eliminata correttamente", Toast.LENGTH_SHORT).show();
+        dbReference.updateChildren(childUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                carModelTxt.setText(null);
+                carColorTxt.setText(null);
+                carPlateTxt.setText(null);
+                Toast.makeText(getContext(), "Automobile eliminata correttamente", Toast.LENGTH_SHORT).show();            }
+        });
     }
     public void updateUserCar(){
         String carPlate = carPlateTxt.getText().toString();

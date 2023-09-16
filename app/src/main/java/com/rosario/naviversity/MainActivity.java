@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         editTextPassword = findViewById(R.id.password);
         mAuth = FirebaseAuth.getInstance();
         regTxt = findViewById(R.id.regTxt);
-        String[] basicPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION};
+        String[] basicPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
         requestPermissions(basicPermissions, BASIC_PERMISSION_CODE);
 
         //MyApplication3 per Toast personalizzato

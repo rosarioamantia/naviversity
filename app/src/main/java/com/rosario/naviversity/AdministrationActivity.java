@@ -54,6 +54,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fAuth = FirebaseAuth.getInstance();
+        Toast.makeText(getApplicationContext(), "AAA " + fAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_administration);
         dbReference = FirebaseDatabase.getInstance().getReference();
         placeTypes = getResources().getStringArray(R.array.place_types);

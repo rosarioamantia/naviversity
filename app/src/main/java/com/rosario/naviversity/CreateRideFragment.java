@@ -82,15 +82,15 @@ public class CreateRideFragment extends Fragment {
     private OnMapReadyCallback mapCallback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
-            getPlaces(googleMap);
             if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
-                googleMap.setMyLocationEnabled(true);
-                googleMap.setBuildingsEnabled(false);
             }
 
+            Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
+            getPlaces(googleMap);
+            googleMap.setMyLocationEnabled(true);
+            googleMap.setBuildingsEnabled(false);
             LatLng currentLatLang = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(currentLatLang,14, 1, 1)));
             googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
@@ -118,15 +118,17 @@ public class CreateRideFragment extends Fragment {
         getLastLocation();
     }
     private void getLastLocation(){
-        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION/*, Manifest.permission.ACCESS_COARSE_LOCATION*/};
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
         ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 result -> {
                     Boolean fineLocationGranted = result.getOrDefault(
                             Manifest.permission.ACCESS_FINE_LOCATION, false);
+                    Boolean coarseLocationGranted = result.getOrDefault(
+                            Manifest.permission.ACCESS_FINE_LOCATION, false);
 
-                    if (fineLocationGranted) {
+                    if (fineLocationGranted || coarseLocationGranted) {
                         LocationRequest lr = LocationRequest.create();
                         lr.setInterval(100);
                         lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -155,7 +157,7 @@ public class CreateRideFragment extends Fragment {
                             }
                         });
                     } else {
-                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione per creare una corsa", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione esatta per creare una corsa", Toast.LENGTH_SHORT).show();
                     }
                 });
         requestPermissionLauncher.launch(permissions);
@@ -361,8 +363,7 @@ public class CreateRideFragment extends Fragment {
         btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //if(checkDateTime(confirmRideCreationView)){ //TODO cambia per aggiungere controllo corretto sui valori di date e time
-                if(true){
+                if(checkDateTime(confirmRideCreationView)){
                     if(user != null && user.isCarOwner()){
                         writeNewRide();
                         dialog.hide();

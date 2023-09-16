@@ -14,6 +14,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -55,21 +57,19 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         Ride ride = listRides.get(position);
         String startName = ride.getStart().getName();
         String stopName = ride.getStop().getName();
+        User owner = ride.getMembers().get(ride.getOwner());
+        String ownerName = (owner.getCompleteName()) + (currentUserId.equals(owner.getId()) ? " (tu)" : "");
         Car car = ride.getCar();
-        String carModel = car.getModel();
-        String carColor = car.getColor();
-        String carPlate = car.getPlate();
+        String carDetails = car.getCompleteName();
         String time = ride.getTime();
         String date = ride.getDate();
 
-        if(isDepartment(stopName)){
-            stopName = trucateString(stopName, 20);
-        }
         holder.startTxt.setText(startName);
         holder.stopTxt.setText(stopName);
-        holder.carTxt.setText(carModel + " " + carColor + " (" + carPlate + ")");
+        holder.carTxt.setText(carDetails);
         holder.dateTxt.setText(date);
         holder.timeTxt.setText(time);
+        holder.ownerTxt.setText(ownerName);
         initializeButtons(ride, holder);
     }
 
@@ -79,11 +79,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
-        TextView startTxt;
-        TextView stopTxt;
-        TextView carTxt;
-        TextView dateTxt;
-        TextView timeTxt;
+        TextView startTxt, stopTxt, carTxt, dateTxt, timeTxt, ownerTxt;
         Button rateBtn, deleteBtn;
         //CardView rateCard;
 
@@ -96,6 +92,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
             timeTxt = itemView.findViewById(R.id.ride_time_txt);
             deleteBtn = itemView.findViewById(R.id.delete_btn);
             rateBtn = itemView.findViewById(R.id.rate_btn);
+            ownerTxt = itemView.findViewById(R.id.ride_owner);
             //rateCard = itemView.get (R.id.rate_card);
             //lo puoi gestire tutto qui forse, basta usare itemView.getRootView
         }
@@ -150,6 +147,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
     public void initializeRatingCard(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
         View rootView = holder.itemView.getRootView();
         Button confirmBtn = rootView.findViewById(R.id.rate_btn);
+        Button discardBtn = rootView.findViewById(R.id.discard_btn);
         CardView rateCard = rootView.findViewById(R.id.rate_card);
         String RideOwnerId = ride.getOwner();
 
@@ -158,29 +156,32 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context.getApplicationContext(), "grazie per il feedback", Toast.LENGTH_SHORT).show();
                 dbReference.child("user").child(RideOwnerId).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        User user = snapshot.getValue(User.class);
+                        User owner = snapshot.getValue(User.class);
                         int rideScore = (int) ratingBar.getRating();
-                        int ratingReceived = user.getRatingReceived();
-                        ratingReceived = ratingReceived + 1;
-                        int actualScore = user.getScore();
+                        int ratingReceived = owner.getRatingReceived();
+                        int actualScore = owner.getScore();
                         int newScore = actualScore + rideScore;
-                        user.setScore(newScore);
-                        user.setRatingReceived(ratingReceived);
+                        owner.setScore(newScore);
+                        owner.setRatingReceived(ratingReceived + 1);
 
-                        Map<String, Object> userValues = user.toMap();
+                        Map<String, Object> userValues = owner.toMap();
                         Map<String, Object> childUpdates = new HashMap<>();
 
                         childUpdates.put("/user/" + RideOwnerId, userValues);
                         childUpdates.put("/ride/" + ride.getId() + "/members/" + RideOwnerId, userValues);
                         childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId + "/votedOwner/", "true");
 
-                        dbReference.updateChildren(childUpdates);
-                        rateCard.setVisibility(View.GONE);
-                        holder.rateBtn.setEnabled(false);
+                        dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                rateCard.setVisibility(View.GONE);
+                                holder.rateBtn.setEnabled(false);
+                                Toast.makeText(context.getApplicationContext(), "grazie per il feedback", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
 
                     @Override
@@ -189,6 +190,13 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                         Log.e(TAG, error.getMessage());
                     }
                 });
+            }
+        });
+
+        discardBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rateCard.setVisibility(View.GONE);
             }
         });
     }
