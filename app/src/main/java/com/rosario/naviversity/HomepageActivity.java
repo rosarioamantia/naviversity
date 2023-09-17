@@ -23,19 +23,6 @@ public class HomepageActivity extends AppCompatActivity {
 
     BottomNavigationView bottomNavigationView;
     FrameLayout frameLayout;
-    @Override
-    public void onBackPressed() {
-
-        int count = getSupportFragmentManager().getBackStackEntryCount();
-
-        if (count == 0) {
-            super.onBackPressed();
-            //additional code
-        } else {
-            getSupportFragmentManager().popBackStack();
-        }
-
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +57,12 @@ public class HomepageActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.frameLayout, fragment);
         //transaction.addToBackStack(null); // Aggiungi la transazione allo stack indietro, se necessario :TODO cancellare ma appunta
         fragmentTransaction.commit();
+    }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        bottomNavigationView.setOnItemSelectedListener(null);
+        finish();
     }
 }

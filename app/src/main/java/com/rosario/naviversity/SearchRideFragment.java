@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SearchRideFragment extends Fragment {
+    GoogleMap googleMap;
     ArrayList<Ride> listRides = new ArrayList<>();
     final static int MAX_RIDE_MEMBERS_ALLOWED = 4; //owner included
     Place start;
@@ -88,7 +89,6 @@ public class SearchRideFragment extends Fragment {
     TextInputEditText dateText;
     Marker positionMarker;
     FirebaseDatabase mDatabase;
-    DatabaseReference rideReference;
     Ride ride;
     BottomSheetDialog confirmDialog;
     FirebaseAuth mAuth;
@@ -98,14 +98,17 @@ public class SearchRideFragment extends Fragment {
     TextInputLayout startLayout, stopLayout, dateLayout, timeLayout;
     FusedLocationProviderClient fusedLocationClient;
     Location currentLocation;
+    ValueEventListener fillPlaceListener, searchRideListener;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                googleMap.setMyLocationEnabled(true);
-                googleMap.setBuildingsEnabled(false);
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
             }
+            setGoogleMap(googleMap);
+            googleMap.setMyLocationEnabled(true);
+            googleMap.setBuildingsEnabled(false);
             googleMap.getUiSettings().setAllGesturesEnabled(true);
             searchCard.setVisibility(View.GONE);
             btnRepeatSearch.setVisibility(View.VISIBLE);
@@ -166,6 +169,10 @@ public class SearchRideFragment extends Fragment {
         }
     };
 
+    public void setGoogleMap(GoogleMap gMap){
+        this.googleMap = gMap;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -186,7 +193,6 @@ public class SearchRideFragment extends Fragment {
         stopAdapter = new ArrayAdapter<Place>(getContext(), android.R.layout.simple_spinner_dropdown_item, listStop);
         placeReference = mDatabase.getReference("place");
         dbReference = mDatabase.getReference();
-        rideReference = mDatabase.getReference("ride");
         mAuth = FirebaseAuth.getInstance();
         startTxt = view.findViewById(R.id.start_txt);
         stopTxt = view.findViewById(R.id.stop_txt);
@@ -217,7 +223,8 @@ public class SearchRideFragment extends Fragment {
                 start = (Place) adapterView.getItemAtPosition(i);
             }
         });
-        placeReference.addListenerForSingleValueEvent(new ValueEventListener() {
+
+        fillPlaceListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 listStart.clear();
@@ -238,7 +245,9 @@ public class SearchRideFragment extends Fragment {
                 Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
-        });
+        };
+        placeReference.addListenerForSingleValueEvent(fillPlaceListener);
+
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -320,7 +329,7 @@ public class SearchRideFragment extends Fragment {
                                             public void onClick(View btnView) {
                                                 listRides.clear();
                                                 if(checkSearchValues(view)){
-                                                    rideReference.addValueEventListener(new ValueEventListener() {
+                                                    searchRideListener = new ValueEventListener() {
                                                         @Override
                                                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                                                             for(DataSnapshot ds : snapshot.getChildren()){
@@ -344,7 +353,8 @@ public class SearchRideFragment extends Fragment {
                                                             Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
                                                             Log.e(TAG, error.getMessage());
                                                         }
-                                                    });
+                                                    };
+                                                    dbReference.child("ride").addListenerForSingleValueEvent(searchRideListener);
                                                 }
                                             }
                                         });
@@ -407,31 +417,6 @@ public class SearchRideFragment extends Fragment {
         }
         return false;
     }
-    public void updateRideMembers(Ride ride){
-        String actualUserId = mAuth.getCurrentUser().getUid();
-        dbReference.child("user").child(actualUserId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                User user = snapshot.getValue(User.class);
-                user.setVotedOwner("false");
-                HashMap<String, User> members = ride.getMembers();
-                members.put(actualUserId, user);
-                ride.setMembers(members);
-                Map<String, Object> rideValues = ride.toMap();
-                Map<String, Object> childUpdates = new HashMap<>();
-                childUpdates.put("/ride/" + ride.getId(), rideValues);
-                //childUpdates.put("/user/" + actualUserId + "/rides/" + ride.getId(), rideValues);
-                // TODO sistema in modo che members non venga salvato in User/rides
-                dbReference.updateChildren(childUpdates);
-                Toast.makeText(getContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
-                Log.e(TAG, error.getMessage());
-            }
-        });
-    }
 
     public boolean checkSearchValues(View view){
         String startValue = startTxt.getText().toString();
@@ -458,5 +443,24 @@ public class SearchRideFragment extends Fragment {
             return false;
         }
         return true;
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(googleMap != null){
+            googleMap.setOnMarkerClickListener(null);
+        }
+        confirmDialog.setOnDismissListener(null);
+        btnRepeatSearch.setOnClickListener(null);
+        btnClose.setOnClickListener(null);
+        stopTxt.setOnItemClickListener(null);
+        startTxt.setOnItemClickListener(null);
+        timeText.setOnClickListener(null);
+        dateText.setOnClickListener(null);
+        btnSearch.setOnClickListener(null);
+        if(searchRideListener != null){
+            dbReference.child("ride").removeEventListener(searchRideListener);
+        }
+        placeReference.removeEventListener(fillPlaceListener);
     }
 }

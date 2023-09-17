@@ -31,6 +31,7 @@ public class ActivitiesFragment extends Fragment {
     DatabaseReference dbReference;
     FirebaseAuth mAuth;
     TextView missingActivitiesTxt;
+    ValueEventListener ridesDataListener;
 
     public ActivitiesFragment() {}
     @Override
@@ -44,7 +45,7 @@ public class ActivitiesFragment extends Fragment {
         String currentUserId = mAuth.getUid();
         missingActivitiesTxt = view.findViewById(R.id.missing_activities);
 
-        dbReference.child("ride").addListenerForSingleValueEvent(new ValueEventListener() {
+        ridesDataListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for(DataSnapshot child : snapshot.getChildren()){
@@ -71,7 +72,15 @@ public class ActivitiesFragment extends Fragment {
                 Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
-        });
+        };
+
+        dbReference.child("ride").addListenerForSingleValueEvent(ridesDataListener);
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        dbReference.child("ride").removeEventListener(ridesDataListener);
     }
 }

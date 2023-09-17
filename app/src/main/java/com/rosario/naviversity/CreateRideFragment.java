@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.renderscript.Sampler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateRideFragment extends Fragment {
+    GoogleMap googleMap;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
     FirebaseAuth mAuth;
@@ -79,6 +81,10 @@ public class CreateRideFragment extends Fragment {
     User user;
     FusedLocationProviderClient fusedLocationClient;
     Location currentLocation;
+    ValueEventListener fillPlacesListener, getUserListener;
+    OnSuccessListener<Location> locationListener;
+    Task<Location> locationTask;
+    GoogleMap.OnInfoWindowClickListener manageInfoWindowClick;
     private OnMapReadyCallback mapCallback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
@@ -86,6 +92,7 @@ public class CreateRideFragment extends Fragment {
                     == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
             }
+            setGoogleMap(googleMap);
 
             Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
             getPlaces(googleMap);
@@ -93,7 +100,7 @@ public class CreateRideFragment extends Fragment {
             googleMap.setBuildingsEnabled(false);
             LatLng currentLatLang = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(currentLatLang,14, 1, 1)));
-            googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            manageInfoWindowClick = new GoogleMap.OnInfoWindowClickListener() {
                 @Override
                 public void onInfoWindowClick(@NonNull Marker marker) {
                     Place selectedPlace = getSelectedPlace(marker);
@@ -107,7 +114,8 @@ public class CreateRideFragment extends Fragment {
                         showConfirmRideCreationDialog(confirmRideCreationView, googleMap);
                     }
                 }
-            });
+            };
+            googleMap.setOnInfoWindowClickListener(manageInfoWindowClick);
         }
     };
 
@@ -144,8 +152,8 @@ public class CreateRideFragment extends Fragment {
                             return;
                         }
                         fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
-                        Task<Location> task = fusedLocationClient.getLastLocation();
-                        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+                        locationTask = fusedLocationClient.getLastLocation();
+                        locationListener = new OnSuccessListener<Location>() {
                             @Override
                             public void onSuccess(Location location) {
                                 if(location != null){
@@ -155,7 +163,8 @@ public class CreateRideFragment extends Fragment {
                                     Toast.makeText(getContext(), "Devi attivare la localizzazione per creare una corsa", Toast.LENGTH_SHORT).show();
                                 }
                             }
-                        });
+                        };
+                        locationTask.addOnSuccessListener(locationListener);
                     } else {
                         Toast.makeText(getContext(), "Devi accettare i permessi alla posizione esatta per creare una corsa", Toast.LENGTH_SHORT).show();
                     }
@@ -186,8 +195,7 @@ public class CreateRideFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         listStart = new ArrayList<>();
         listStop = new ArrayList<>();
-
-        dbReference.child("user").child(mAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        getUserListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 user = snapshot.getValue(User.class);
@@ -199,7 +207,9 @@ public class CreateRideFragment extends Fragment {
                 Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
-        });
+        };
+
+        dbReference.child("user").child(mAuth.getUid()).addListenerForSingleValueEvent(getUserListener);
 
         return view;
     }
@@ -212,7 +222,7 @@ public class CreateRideFragment extends Fragment {
     }
 
     private void getPlaces(GoogleMap googleMap) {
-        dbReference.child("place").addListenerForSingleValueEvent(new ValueEventListener() {
+        fillPlacesListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.getChildrenCount() > 0) {
@@ -232,7 +242,8 @@ public class CreateRideFragment extends Fragment {
                 Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
-        });
+        };
+        dbReference.child("place").addListenerForSingleValueEvent(fillPlacesListener);
     }
 
     private boolean isStart(Place place){
@@ -366,6 +377,7 @@ public class CreateRideFragment extends Fragment {
                 if(checkDateTime(confirmRideCreationView)){
                     if(user != null && user.isCarOwner()){
                         writeNewRide();
+                        Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();
                         dialog.hide();
                         reloadGoogleMap(googleMap);
                     }else{
@@ -396,8 +408,27 @@ public class CreateRideFragment extends Fragment {
         //one put -> one update in a different table
         childUpdates.put("/ride/" + key, rideValues);
         //childUpdates.put("/user/ride_subscribed/" + key, rideValues);
-
-        dbReference.updateChildren(childUpdates);
-        Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();
+    }
+    private void setGoogleMap(GoogleMap gMap){
+        this.googleMap = gMap;
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(btnConfirm != null){
+            btnConfirm.setOnClickListener(null);
+        }
+        if(timeText != null){
+            timeText.setOnClickListener(null);
+        }
+        if(dateText != null){
+            dateText.setOnClickListener(null);
+        }
+        if(dialog != null){
+            dialog.setOnDismissListener(null);
+        }
+        dbReference.child("place").removeEventListener(fillPlacesListener);
+        dbReference.child("user").child(mAuth.getUid()).removeEventListener(getUserListener);
+        googleMap.setOnInfoWindowClickListener(null);
     }
 }

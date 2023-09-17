@@ -83,7 +83,6 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
     public static class MyViewHolder extends RecyclerView.ViewHolder{
         TextView startTxt, stopTxt, carTxt, dateTxt, timeTxt, ownerTxt;
         Button rateBtn, deleteBtn;
-        //CardView rateCard;
 
         public MyViewHolder(@NonNull View itemView){
             super(itemView);
@@ -95,8 +94,6 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
             deleteBtn = itemView.findViewById(R.id.delete_btn);
             rateBtn = itemView.findViewById(R.id.rate_btn);
             ownerTxt = itemView.findViewById(R.id.ride_owner);
-            //rateCard = itemView.get (R.id.rate_card);
-            //lo puoi gestire tutto qui forse, basta usare itemView.getRootView
         }
     }
     public void initializeButtons(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
@@ -226,17 +223,5 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
     }
     public boolean currentUserIsRideOwner(String currentUserId , String rideOwnerId){
         return currentUserId.equals(rideOwnerId);
-    }
-    public String trucateString(String input, int maxLength) {
-        if (input.length() <= maxLength)
-            return input;
-        else
-            return input.substring(0, 3) + "." + input.substring(15);
-    }
-    public boolean isDepartment(String input){
-        if(input.substring(0, 12).equals("Dipartimento")){
-            return true;
-        }
-        return false;
     }
 }

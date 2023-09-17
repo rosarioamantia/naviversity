@@ -75,7 +75,6 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
         holder.stopTxt.setText(stopName);
         holder.timeTxt.setText(rideTime);
         holder.dateTxt.setText(rideDate);
-
         holder.ratingBar.setRating(scoreToShow);
 
         confirmBtn.setOnClickListener(new View.OnClickListener() {

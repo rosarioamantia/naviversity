@@ -84,7 +84,6 @@ public class RegistrationActivity extends AppCompatActivity {
         super.onBackPressed();
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
-        finish();
     }
 
     @Override
@@ -228,33 +227,13 @@ public class RegistrationActivity extends AppCompatActivity {
 
     public void switchCarDetailsVisibility(boolean checked){
         if(checked){
-            //TODO sistema duplicati
-            //carModelTxt.setVisibility(View.VISIBLE);
             carPlateInputLayout.setVisibility(View.VISIBLE);
             carColorInputLayout.setVisibility(View.VISIBLE);
             carModelInputLayout.setVisibility(View.VISIBLE);
-
-            /* cancellare
-            ConstraintLayout constraintLayout = findViewById(R.id.registration_layout);
-            ConstraintSet constraintSet = new ConstraintSet();
-            constraintSet.clone(constraintLayout);
-            constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.car_color_input_layout, ConstraintSet.BOTTOM,20);
-            constraintSet.applyTo(constraintLayout);
-
-             */
         }else{
-            //carModelTxt.setVisibility(View.GONE);
             carPlateInputLayout.setVisibility(View.GONE);
             carColorInputLayout.setVisibility(View.GONE);
             carModelInputLayout.setVisibility(View.GONE);
-            /* cancellare
-            ConstraintLayout constraintLayout = findViewById(R.id.registration_layout);
-            ConstraintSet constraintSet = new ConstraintSet();
-            constraintSet.clone(constraintLayout);
-            constraintSet.connect(R.id.btn_register, ConstraintSet.TOP, R.id.car_switch, ConstraintSet.BOTTOM,0);
-            constraintSet.applyTo(constraintLayout);
-
-             */
         }
     }
 
@@ -294,12 +273,6 @@ public class RegistrationActivity extends AppCompatActivity {
                 });
             }
         });
-    }
-
-    public String getFileExtension(Uri uri){
-        ContentResolver cr = getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return mime.getExtensionFromMimeType(cr.getType(uri));
     }
 
     public boolean checkFilledUserValues(){
@@ -378,5 +351,15 @@ public class RegistrationActivity extends AppCompatActivity {
     public boolean isValidCarPlate(String carPlate){
         String plateRegex = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
         return carPlate.matches(plateRegex);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        carSwitch.setOnCheckedChangeListener(null);
+        logTxt.setOnClickListener(null);
+        btnReg.setOnClickListener(null);
+        btnReg.setOnClickListener(null);
+        profileImg.setOnClickListener(null);
     }
 }

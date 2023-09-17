@@ -39,17 +39,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AdministrationActivity extends AppCompatActivity implements OnMapReadyCallback {
-    GoogleMap googleMap; //se serve fuori dal metodo, assegnalo e usalo
+    GoogleMap googleMap;
     FirebaseAuth fAuth;
     DatabaseReference dbReference;
     BottomSheetDialog dialog;
     String[] placeTypes;
     ArrayAdapter<String> typeAdapter;
     HashMap <Marker, Place> markerPlaceMap = new HashMap<>();
-    Button btnLogout;
+    View.OnClickListener addPlaceListener, deletePlaceListener;
+    Button btnLogout, confirmAddBtn, confirmDeleteBtn;
     static final double INIT_LAT = 37.51036888646457;
     static final double INIT_LON = 15.085487628719221;
-
+    ValueEventListener placeDatabaseListener;
+    GoogleMap.OnMapClickListener addMapsPlaceListener;
+    GoogleMap.OnInfoWindowClickListener deleteMapsPlaceListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,10 +84,11 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+        this.googleMap = googleMap;
         LatLng initCoordinates = new LatLng(INIT_LAT, INIT_LON);
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(initCoordinates,14, 1, 1)));
 
-        dbReference.child("place").addListenerForSingleValueEvent(new ValueEventListener() {
+        placeDatabaseListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for(DataSnapshot item : snapshot.getChildren()){
@@ -105,21 +109,20 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
                 Toast.makeText(getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
-        });
+        };
 
+        dbReference.child("place").addListenerForSingleValueEvent(placeDatabaseListener);
 
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        addMapsPlaceListener = new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(@NonNull LatLng latLng) {
                 View confirmRideCreationView = getLayoutInflater().inflate(R.layout.confirm_place_dialog, null, false);
                 dialog = new BottomSheetDialog(AdministrationActivity.this);
                 dialog.setContentView(confirmRideCreationView);
-                Button confirmBtn = confirmRideCreationView.findViewById(R.id.delete_btn);
+                confirmAddBtn = confirmRideCreationView.findViewById(R.id.action_btn);
                 setInitialDialogDataAdd(confirmRideCreationView, latLng);
                 dialog.show();
-
-
-                confirmBtn.setOnClickListener(new View.OnClickListener() {
+                addPlaceListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if(checkFilledPlaceValues(confirmRideCreationView)){
@@ -137,29 +140,32 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
                             dialog.hide();
                         }
                     }
-                });
+                };
+                confirmAddBtn.setOnClickListener(addPlaceListener);
             }
-        });
+        };
+        googleMap.setOnMapClickListener(addMapsPlaceListener);
 
-        googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+        deleteMapsPlaceListener = new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(@NonNull Marker marker) {
                 Place placeToDelete = markerPlaceMap.get(marker);
                 View confirmRideCreationView = getLayoutInflater().inflate(R.layout.confirm_place_dialog, null, false);
                 dialog = new BottomSheetDialog(AdministrationActivity.this);
                 dialog.setContentView(confirmRideCreationView);
-                Button confirmBtn = confirmRideCreationView.findViewById(R.id.delete_btn);
+                confirmDeleteBtn = confirmRideCreationView.findViewById(R.id.action_btn);
                 setInitialDialogDataDel(confirmRideCreationView, placeToDelete);
                 dialog.show();
-
-                confirmBtn.setOnClickListener(new View.OnClickListener() {
+                deletePlaceListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         deletePlace(placeToDelete, marker, dialog);
                     }
-                });
+                };
+                confirmDeleteBtn.setOnClickListener(deletePlaceListener);
             }
-        });
+        };
+        googleMap.setOnInfoWindowClickListener(deleteMapsPlaceListener);
     }
 
     private void setInitialDialogDataAdd(View dialogView, LatLng latLng){
@@ -246,5 +252,14 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
                 Toast.makeText(getApplicationContext(), "Luogo eliminato con successo", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        btnLogout.setOnClickListener(null);
+        dbReference.child("place").removeEventListener(placeDatabaseListener);
+        googleMap.setOnMapClickListener(null);
+        googleMap.setOnInfoWindowClickListener(null);
     }
 }
