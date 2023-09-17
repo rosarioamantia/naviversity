@@ -54,7 +54,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fAuth = FirebaseAuth.getInstance();
-        Toast.makeText(getApplicationContext(), "AAA " + fAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Tocca la mappa per creare nuovi luoghi", Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_administration);
         dbReference = FirebaseDatabase.getInstance().getReference();
         placeTypes = getResources().getStringArray(R.array.place_types);
@@ -74,6 +74,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
                 fAuth.signOut();
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
     }
@@ -168,7 +169,6 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         placeLatTxt.setText(String.valueOf(latLng.latitude));
         placeLonTxt.setText(String.valueOf(latLng.longitude));
         placeTypeTxt.setAdapter(typeAdapter);
-
     }
 
     private void setInitialDialogDataDel(View dialogView, Place placeToDelete){

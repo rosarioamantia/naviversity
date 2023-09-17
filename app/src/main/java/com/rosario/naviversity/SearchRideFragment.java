@@ -2,24 +2,11 @@ package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.database.DatabaseErrorHandler;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -34,9 +21,19 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -72,7 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapsFragment extends Fragment {
+public class SearchRideFragment extends Fragment {
     ArrayList<Ride> listRides = new ArrayList<>();
     final static int MAX_RIDE_MEMBERS_ALLOWED = 4; //owner included
     Place start;
@@ -140,13 +137,11 @@ public class MapsFragment extends Fragment {
                         @Override
                         public void onDismiss(DialogInterface dialogInterface) {
                             searchCard.setVisibility(View.VISIBLE);
-                            //positionMarker = null;
                             btnRepeatSearch.setVisibility(View.GONE);
                             btnClose.setVisibility(View.GONE);
                         }
                     });
 
-                    //controlla a che serve
                     confirmDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                     return false;
                 }
@@ -176,7 +171,7 @@ public class MapsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_maps, container, false);
+        View view = inflater.inflate(R.layout.fragment_search_ride, container, false);
         btnSearch = view.findViewById(R.id.btn_search);
         btnRepeatSearch = view.findViewById(R.id.btn_repeat_search);
         btnClose = view.findViewById(R.id.btn_close);
@@ -244,7 +239,6 @@ public class MapsFragment extends Fragment {
                 Log.e(TAG, error.getMessage());
             }
         });
-        dateText.setText("17/9/2023");
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -264,7 +258,6 @@ public class MapsFragment extends Fragment {
                 datePicker.show();
             }
         });
-        timeText.setText("21:00");
         timeText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -285,15 +278,15 @@ public class MapsFragment extends Fragment {
     }
 
     private void getLastLocation(View view){
-        String[] permissions = {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
         ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 result -> {
                     Boolean fineLocationGranted = result.getOrDefault(
-                            android.Manifest.permission.ACCESS_FINE_LOCATION, false);
+                            Manifest.permission.ACCESS_FINE_LOCATION, false);
                     Boolean coarseLocationGranted = result.getOrDefault(
-                            android.Manifest.permission.ACCESS_FINE_LOCATION, false);
+                            Manifest.permission.ACCESS_FINE_LOCATION, false);
 
                     if (fineLocationGranted && coarseLocationGranted) {
                         //aggiorna posizione
@@ -334,7 +327,7 @@ public class MapsFragment extends Fragment {
                                                                 ride = ds.getValue(Ride.class);
                                                                 if(ride != null){
                                                                     ride.setId(ds.getKey());
-                                                                    if(/*true*/ checkIsRideEligible(ride)){ //TODO scommenta
+                                                                    if(checkIsRideEligible(ride)){
                                                                         listRides.add(ride);
                                                                     }
                                                                 }

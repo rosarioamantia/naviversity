@@ -44,7 +44,6 @@ public class HomepageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_homepage);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         frameLayout = findViewById(R.id.frameLayout);
-        //replaceFragment(new MapsFragment());
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -52,7 +51,7 @@ public class HomepageActivity extends AppCompatActivity {
 
                 int itemId = item.getItemId();
                 if(itemId == R.id.searchRide){
-                    replaceFragment(new MapsFragment());
+                    replaceFragment(new SearchRideFragment());
                 }else if(itemId == R.id.createRide) {
                     replaceFragment(new CreateRideFragment());
                 }else if(itemId == R.id.activities){

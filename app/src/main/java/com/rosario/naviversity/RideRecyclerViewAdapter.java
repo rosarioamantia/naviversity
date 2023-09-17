@@ -15,7 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -105,7 +107,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         if(isRidePassed(rideDate, rideTime)){
             holder.deleteBtn.setEnabled(false);
             if(currentUserIsRideOwner(currentUserId, rideOwnerId) || currentUserAlreadyVoted(ride)){
-                holder.rateBtn.setEnabled(false);
+                holder.rateBtn.setVisibility(View.GONE);
             }else{
                 holder.rateBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -117,7 +119,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         }else{
             Map<String, Object> childUpdates = new HashMap<>();
             if(currentUserIsRideOwner(currentUserId, rideOwnerId)){
-                holder.rateBtn.setEnabled(false);
+                holder.rateBtn.setVisibility(View.GONE);
                 holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -133,13 +135,16 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                     @Override
                     public void onClick(View view) {
                         childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
-                        dbReference.updateChildren(childUpdates);
-                        listRides.remove(holder.getAdapterPosition());
-                        notifyItemRemoved(holder.getAdapterPosition());
-                        Toast.makeText(context.getApplicationContext(), "Ti sei cancellato dalla corsa", Toast.LENGTH_SHORT).show();
+                        dbReference.updateChildren(childUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                listRides.remove(holder.getAdapterPosition());
+                                notifyItemRemoved(holder.getAdapterPosition());
+                                Toast.makeText(context.getApplicationContext(), "Ti sei cancellato dalla corsa", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 });
-
                 holder.rateBtn.setEnabled(false);
             }
         }

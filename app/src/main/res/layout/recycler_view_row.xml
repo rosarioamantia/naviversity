@@ -46,7 +46,6 @@
                 android:gravity="end"
                 android:maxLines="2"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/owner_txt"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/owner_txt" />
@@ -60,7 +59,6 @@
                 android:numStars="5"
                 android:stepSize="1"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/car_txt"
                 app:layout_constraintEnd_toEndOf="@+id/ride_owner"
                 app:layout_constraintTop_toTopOf="@+id/car_txt" />
@@ -73,7 +71,6 @@
                 android:gravity="end"
                 android:maxLines="2"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="@+id/ride_car_txt"
                 app:layout_constraintTop_toTopOf="@+id/start_txt" />
 
@@ -118,7 +115,6 @@
                 android:gravity="end"
                 android:maxLines="2"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="@+id/ride_start_txt"
                 app:layout_constraintTop_toTopOf="@+id/stop_txt" />
 
@@ -139,7 +135,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/date_txt"
                 app:layout_constraintEnd_toEndOf="@+id/ride_stop_txt"
                 app:layout_constraintTop_toTopOf="@+id/date_txt" />
@@ -161,7 +156,6 @@
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
                 android:gravity="end"
-                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/time_txt"
                 app:layout_constraintEnd_toEndOf="@+id/ride_date_txt"
                 app:layout_constraintTop_toTopOf="@+id/time_txt" />
