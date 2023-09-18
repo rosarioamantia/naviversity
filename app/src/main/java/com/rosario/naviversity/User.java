@@ -18,12 +18,15 @@ public class User implements Serializable {
     private Car car = null;
     private String votedOwner = null;
     private int ratingReceived = 0;
+
+    private HashMap<String, String> notifications;
     private int score = 0;
 
     public User(String name, String surname, String phone){
         this.name = name;
         this.surname = surname;
         this.phone = phone;
+        this.notifications = new HashMap<>();
     }
 
     public User(){}
@@ -98,6 +101,15 @@ public class User implements Serializable {
     public void setRatingReceived(int ratingReceived) {
         this.ratingReceived = ratingReceived;
     }
+
+    public HashMap<String, String> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(HashMap<String, String> notifications) {
+        this.notifications = notifications;
+    }
+
     @Exclude
     public String getCompleteName(){
         return name + " " + surname;
@@ -114,6 +126,7 @@ public class User implements Serializable {
         result.put("votedOwner", votedOwner);
         result.put("score", score);
         result.put("ratingReceived", ratingReceived);
+        result.put("notifications", notifications);
         return result;
     }
 }

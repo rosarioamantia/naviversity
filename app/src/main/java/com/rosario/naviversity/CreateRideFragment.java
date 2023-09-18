@@ -55,6 +55,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -215,7 +216,7 @@ public class CreateRideFragment extends Fragment {
     }
 
     public void showStopPlaces(GoogleMap googleMap) {
-        Toast.makeText(getContext(), "Scegli punto di arrivo", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Scegli destinazione", Toast.LENGTH_SHORT).show();
         for (Place stop : listStop) {
             showMarker(googleMap, stop, "arrivo");
         }
@@ -377,9 +378,7 @@ public class CreateRideFragment extends Fragment {
                 if(checkDateTime(confirmRideCreationView)){
                     if(user != null && user.isCarOwner()){
                         writeNewRide();
-                        Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();
                         dialog.hide();
-                        reloadGoogleMap(googleMap);
                     }else{
                         Toast.makeText(getContext(), "Prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
                     }
@@ -398,17 +397,47 @@ public class CreateRideFragment extends Fragment {
     private void writeNewRide(){
         String key = dbReference.child("ride").push().getKey();
         Car car = user.getCar();
+        HashMap<String, String> userNotification = user.getNotifications();
+
         HashMap<String, User> members = new HashMap<>();
+        user.setNotifications(null);
         members.put(user.getId(), user);
         Ride ride = new Ride(start, stop, user.getId(), dateText.getText().toString(), timeText.getText().toString(), car, members);
 
         Map<String, Object> rideValues = ride.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        //one put -> one update in a different table
         childUpdates.put("/ride/" + key, rideValues);
-        //childUpdates.put("/user/ride_subscribed/" + key, rideValues);
+
+        if(userNotification == null){
+            userNotification = new HashMap<>();
+        }
+        String keyDateTime = generateKeyNotification();
+        String message = generateMessageNotificationOwner(ride);
+        userNotification.put(keyDateTime, message);
+        childUpdates.put("/user/" + user.getId() + "/notifications/", userNotification);
+
+        dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();
+                reloadGoogleMap(googleMap);
+            }
+        });
     }
+
+    public String generateMessageNotificationOwner(Ride ride){
+        String message = "Hai creato una corsa per giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
+        return message;
+    }
+
+    public String generateKeyNotification(){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
+        String key = now.format(formatter);
+        return key;
+    }
+
     private void setGoogleMap(GoogleMap gMap){
         this.googleMap = gMap;
     }

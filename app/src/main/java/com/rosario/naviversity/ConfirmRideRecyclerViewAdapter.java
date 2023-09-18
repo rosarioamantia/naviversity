@@ -26,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -103,11 +104,22 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
 
     public void writeUserInRide(User user, Ride ride){
         HashMap<String, User> members = ride.getMembers();
+        HashMap<String, String> userNotification = user.getNotifications();
+
+        user.setNotifications(null);
         members.put(fAuth.getUid(), user);
         ride.setMembers(members);
         Map<String, Object> rideValues = ride.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/ride/" + ride.getId(), rideValues);
+
+        if(userNotification == null){
+            userNotification = new HashMap<>();
+        }
+        String keyDateTime = generateKeyNotification();
+        String message = generateMessageNotificationMember(ride);
+        userNotification.put(keyDateTime, message);
+        childUpdates.put("/user/" + user.getId() + "/notifications/", userNotification);
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
@@ -115,6 +127,18 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
                 dialog.dismiss();
             }
         });
+    }
+
+    public String generateMessageNotificationMember(Ride ride){
+        String message = "Ti sei inscritto ad una corsa per giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
+        return message;
+    }
+
+    public String generateKeyNotification(){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
+        String key = now.format(formatter);
+        return key;
     }
 
     @Override

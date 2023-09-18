@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -24,6 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -103,9 +105,12 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
         if(isRidePassed(rideDate, rideTime)){
             holder.deleteBtn.setEnabled(false);
-            if(currentUserIsRideOwner(currentUserId, rideOwnerId) || currentUserAlreadyVoted(ride)){
+            if(currentUserIsRideOwner(currentUserId, rideOwnerId)){
                 holder.rateBtn.setVisibility(View.GONE);
-            }else{
+            }else if(currentUserAlreadyVoted(ride)){
+                holder.rateBtn.setEnabled(false);
+            }
+            else{
                 holder.rateBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -120,32 +125,112 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                 holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        childUpdates.put("/ride/" + ride.getId(), null);
-                        dbReference.updateChildren(childUpdates);
+                        deleteRide(ride);
                         listRides.remove(holder.getAdapterPosition());
                         notifyItemRemoved(holder.getAdapterPosition());
-                        Toast.makeText(context.getApplicationContext(), "Corsa eliminata", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context.getApplicationContext(), "Hai eliminato la corsa", Toast.LENGTH_SHORT).show();
                     }
                 });
             }else{
                 holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
-                        dbReference.updateChildren(childUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                listRides.remove(holder.getAdapterPosition());
-                                notifyItemRemoved(holder.getAdapterPosition());
-                                Toast.makeText(context.getApplicationContext(), "Ti sei cancellato dalla corsa", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        deleteRideMember(ride);
+                        //childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
+                        listRides.remove(holder.getAdapterPosition());
+                        notifyItemRemoved(holder.getAdapterPosition());
+                        Toast.makeText(context.getApplicationContext(), "Ti sei cancellato dalla corsa", Toast.LENGTH_SHORT).show();
                     }
                 });
                 holder.rateBtn.setEnabled(false);
             }
         }
     }
+
+    public void deleteRideMember(Ride ride){
+        Map<String, Object> childUpdates = new HashMap<>();
+        dbReference.child("user").child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User dbUser = snapshot.getValue(User.class);
+                dbUser.setId(snapshot.getKey());
+                HashMap<String, String> notifications = dbUser.getNotifications();
+
+                if(notifications == null){
+                    notifications = new HashMap<>();
+                }
+                String keyDateTime = generateKeyNotification();
+                String message = generateMessageNotificationMember(ride);
+                notifications.put(keyDateTime, message);
+                dbUser.setNotifications(notifications);
+                childUpdates.put("/user/" + dbUser.getId(), dbUser);
+                childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
+                dbReference.updateChildren(childUpdates);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, error.getMessage());
+            }
+        });
+    }
+    public void deleteRide(Ride ride){
+        Map<String, Object> childUpdates = new HashMap<>();
+
+        HashMap<String, User> rideMembers = ride.getMembers();
+        dbReference.child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot child : snapshot.getChildren()){
+                    User dbUser = child.getValue(User.class);
+                    dbUser.setId(child.getKey());
+
+                    if(rideMembers.get(dbUser.getId()) != null){
+                        //write notification in dbUSer
+                        HashMap<String, String> notifications = dbUser.getNotifications();
+                        if(notifications == null){
+                            notifications = new HashMap<>();
+                        }
+                        String keyDateTime = generateKeyNotification();
+                        String message = generateMessageNotification(ride, dbUser);
+                        notifications.put(keyDateTime, message);
+                        dbUser.setNotifications(notifications);
+                        childUpdates.put("/user/" + dbUser.getId(), dbUser);
+                    }
+                }
+                childUpdates.put("/ride/" + ride.getId(), null);
+                dbReference.updateChildren(childUpdates);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, error.getMessage());
+            }
+        });
+    }
+
+    public String generateMessageNotificationMember(Ride ride){
+        String message = "Ti sei cancellato dalla corsa " + ride.getDate() + " (" + ride.getTime() + ") " + "che andava da " + ride.getStart().getName() + " a " + ride.getStop().getName();
+        return message;
+    }
+
+    public String generateKeyNotification(){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
+        String key = now.format(formatter);
+        return key;
+    }
+
+    public String generateMessageNotification(Ride ride, User dbUser){
+        String message = "";
+        if(ride.getOwner().equals(dbUser.getId())){
+            message = "Hai eliminato la corsa ";
+        }else{
+            message = "L'organizzatore ha eliminato la corsa ";
+        }
+        message += "di giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "che andava da " + ride.getStart().getName() + " a " + ride.getStop().getName();
+        return message;
+    }
+
     public void initializeRatingCard(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
         View rootView = holder.itemView.getRootView();
         Button confirmBtn = rootView.findViewById(R.id.rate_btn);
