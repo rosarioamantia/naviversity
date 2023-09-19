@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/recycler_view_row_layout">
+    android:id="@+id/recycler_view_row">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card"
@@ -73,6 +73,8 @@
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="@+id/ride_car_txt"
                 app:layout_constraintTop_toTopOf="@+id/start_txt" />
+
+
 
             <TextView
                 android:id="@+id/car_txt"
@@ -160,18 +162,40 @@
                 app:layout_constraintEnd_toEndOf="@+id/ride_date_txt"
                 app:layout_constraintTop_toTopOf="@+id/time_txt" />
 
+            <TextView
+                android:id="@+id/members_dropdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:drawableLeft="@drawable/baseline_arrow_right_24"
+                android:text="Visualizza partecipanti"
+                android:textColorLink="@color/black"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="@+id/time_txt"
+                app:layout_constraintTop_toBottomOf="@+id/time_txt" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/members_recycler_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="40dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@+id/members_dropdown"
+                app:layout_constraintTop_toBottomOf="@+id/members_dropdown" />
+
             <Button
                 android:id="@+id/delete_btn"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
                 android:text="Disdici corsa"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/rate_btn"
-                app:layout_constraintTop_toBottomOf="@+id/time_txt" />
+                app:layout_constraintTop_toBottomOf="@+id/members_recycler_view" />
 
             <Button
                 android:id="@+id/rate_btn"

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/confirm_ride_recycler_view_row_layout">
+    android:id="@+id/confirm_ride_recycler_view_row">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card"

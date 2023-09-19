@@ -20,7 +20,6 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.tabs.TabLayout;
 
 public class HomepageActivity extends AppCompatActivity {
-
     BottomNavigationView bottomNavigationView;
     FrameLayout frameLayout;
 
@@ -35,7 +34,6 @@ public class HomepageActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 frameLayout.setVisibility(View.VISIBLE);
-
                 int itemId = item.getItemId();
                 if(itemId == R.id.searchRide){
                     replaceFragment(new SearchRideFragment());

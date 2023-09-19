@@ -35,6 +35,9 @@ import java.util.Map;
 
 public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<ConfirmRideRecyclerViewAdapter.MyViewHolder>{
     Context context;
+    final static String NOTIFICATION_NODE = "/notification/";
+    final static String USER_NODE = "/user/";
+    final static String RIDE_NODE = "/ride/";
     ArrayList<Ride> listRides;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
@@ -86,10 +89,8 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         User user = snapshot.getValue(User.class);
+                        user.setId(fAuth.getUid());
                         user.setVotedOwner("false");
-                        user.setName(null);
-                        user.setSurname(null);
-                        user.setPhone(null);
                         writeUserInRide(user, ride);
                     }
                     @Override
@@ -103,34 +104,65 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
     }
 
     public void writeUserInRide(User user, Ride ride){
-        HashMap<String, User> members = ride.getMembers();
-        HashMap<String, String> userNotification = user.getNotifications();
-
-        user.setNotifications(null);
-        members.put(fAuth.getUid(), user);
-        ride.setMembers(members);
-        Map<String, Object> rideValues = ride.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/ride/" + ride.getId(), rideValues);
-
-        if(userNotification == null){
-            userNotification = new HashMap<>();
-        }
-        String keyDateTime = generateKeyNotification();
-        String message = generateMessageNotificationMember(ride);
-        userNotification.put(keyDateTime, message);
-        childUpdates.put("/user/" + user.getId() + "/notifications/", userNotification);
-        dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
+        dbReference.child("user").child(ride.getOwner()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onSuccess(Void unused) {
-                Toast.makeText(context.getApplicationContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
+            public void onDataChange(DataSnapshot snapshot) {
+                User rideOwner = snapshot.getValue(User.class);
+                rideOwner.setId(snapshot.getKey());
+                HashMap<String, String> ownerNotification = rideOwner.getNotification();
+                HashMap<String, User> members = ride.getMembers();
+                HashMap<String, String> userNotification = user.getNotification();
+                String messageMember = generateMessageNotificationMember(ride);
+                String messageOwner = generateMessageNotificationOwner(ride, user);
+                String keyDateTime = generateKeyNotification();
+
+                if(ownerNotification == null){
+                    ownerNotification = new HashMap<>();
+                }
+                if(userNotification == null){
+                    userNotification = new HashMap<>();
+                }
+
+                ownerNotification.put(keyDateTime, messageOwner);
+                childUpdates.put(USER_NODE + rideOwner.getId() + NOTIFICATION_NODE, ownerNotification);
+
+                user.setNotification(null);
+
+                members.put(fAuth.getUid(), user);
+                ride.setMembers(members);
+                Map<String, Object> rideValues = ride.toMap();
+                childUpdates.put(RIDE_NODE + ride.getId(), rideValues);
+
+                userNotification.put(keyDateTime, messageMember);
+                childUpdates.put(USER_NODE + user.getId() + NOTIFICATION_NODE, userNotification);
+
+                dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Toast.makeText(context.getApplicationContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                });
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, error.getMessage());
             }
         });
     }
 
+    public String generateMessageNotificationOwner(Ride ride, User user){
+        String message = "Lo studente " + user.getCompleteName() + " si è iscritto alla corsa che hai organizzato per giorno " + ride.getDate() +
+                " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
+        return message;
+    }
+
     public String generateMessageNotificationMember(Ride ride){
-        String message = "Ti sei inscritto ad una corsa per giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
+        String message = "Ti sei iscritto alla corsa di giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
+        User rideOwner = ride.getMembers().get(ride.getOwner());
+        message += " organizzata dallo studente " + rideOwner.getCompleteName();
         return message;
     }
 

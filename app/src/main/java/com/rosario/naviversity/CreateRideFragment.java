@@ -397,10 +397,10 @@ public class CreateRideFragment extends Fragment {
     private void writeNewRide(){
         String key = dbReference.child("ride").push().getKey();
         Car car = user.getCar();
-        HashMap<String, String> userNotification = user.getNotifications();
+        HashMap<String, String> userNotification = user.getNotification();
 
         HashMap<String, User> members = new HashMap<>();
-        user.setNotifications(null);
+        user.setNotification(null);
         members.put(user.getId(), user);
         Ride ride = new Ride(start, stop, user.getId(), dateText.getText().toString(), timeText.getText().toString(), car, members);
 
@@ -415,7 +415,7 @@ public class CreateRideFragment extends Fragment {
         String keyDateTime = generateKeyNotification();
         String message = generateMessageNotificationOwner(ride);
         userNotification.put(keyDateTime, message);
-        childUpdates.put("/user/" + user.getId() + "/notifications/", userNotification);
+        childUpdates.put("/user/" + user.getId() + "/notification/", userNotification);
 
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override

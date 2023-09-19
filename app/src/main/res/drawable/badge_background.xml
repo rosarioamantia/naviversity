@@ -1,0 +1,4 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FF0000" /> <!-- Imposta il colore dello sfondo del testo -->
+    <corners android:radius="10dp" /> <!-- Imposta i bordi arrotondati dello sfondo -->
+</shape>

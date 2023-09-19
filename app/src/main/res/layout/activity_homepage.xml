@@ -14,9 +14,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:name="com.rosario.naviversity.SearchRideFragment">
+        android:name="com.rosario.naviversity.SearchRideFragment"/>
 
-    </androidx.fragment.app.FragmentContainerView>
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/badge"
+        app:layout_constraintBottom_toBottomOf="@+id/frameLayout"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
