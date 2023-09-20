@@ -12,6 +12,7 @@ public class User implements Serializable {
     @Exclude
     private String id;
     private String name;
+    private int lastNotificationNumber = 0;
     private String surname;
     private String phone;
     private boolean carOwner = false;
@@ -27,6 +28,14 @@ public class User implements Serializable {
         this.surname = surname;
         this.phone = phone;
         this.notification = new HashMap<>();
+    }
+
+    public int getLastNotificationNumber() {
+        return lastNotificationNumber;
+    }
+
+    public void setLastNotificationNumber(int lastNotificationNumber) {
+        this.lastNotificationNumber = lastNotificationNumber;
     }
 
     public User(){}
@@ -127,6 +136,7 @@ public class User implements Serializable {
         result.put("score", score);
         result.put("ratingReceived", ratingReceived);
         result.put("notification", notification);
+        result.put("lastNotificationNumber", lastNotificationNumber);
         return result;
     }
 }
