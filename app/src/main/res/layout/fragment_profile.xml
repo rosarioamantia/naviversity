@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ProfileFragment">
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="30dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_logout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="Logout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <RatingBar
+            android:id="@+id/rating_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:isIndicator="true"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/profile_image"
+            app:layout_constraintHorizontal_bias="0.504"
+            app:layout_constraintStart_toStartOf="@+id/profile_image"
+            app:layout_constraintTop_toBottomOf="@+id/profile_image" />
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Nome"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rating_bar" />
+
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
+            app:layout_constraintStart_toStartOf="@+id/textView10"
+            app:layout_constraintTop_toBottomOf="@+id/textView10" />
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Cognome"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
+            app:layout_constraintStart_toStartOf="@+id/textView10"
+            app:layout_constraintTop_toBottomOf="@+id/user_name" />
+
+        <TextView
+            android:id="@+id/user_surname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/textView12"
+            app:layout_constraintStart_toStartOf="@+id/textView12"
+            app:layout_constraintTop_toBottomOf="@+id/textView12" />
+
+        <TextView
+            android:id="@+id/textView16"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="E-mail"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
+            app:layout_constraintStart_toStartOf="@+id/textView10"
+            app:layout_constraintTop_toBottomOf="@+id/user_surname" />
+
+        <TextView
+            android:id="@+id/user_mail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/textView16"
+            app:layout_constraintStart_toStartOf="@+id/textView16"
+            app:layout_constraintTop_toBottomOf="@+id/textView16" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/car_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:checked="false"
+            android:text="Possiedo un'automobile"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/textView10"
+            app:layout_constraintStart_toStartOf="@+id/textView10"
+            app:layout_constraintTop_toBottomOf="@+id/user_mail" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/car_constraint_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/car_switch"
+            app:layout_constraintStart_toStartOf="@+id/car_switch"
+            app:layout_constraintTop_toBottomOf="@+id/car_switch">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/car_model_input_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:hint="Modello"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <AutoCompleteTextView
+                    android:id="@+id/car_model_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:focusable="false"
+                    android:hint="Modello" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/car_color_input_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:enabled="false"
+                android:hint="Colore"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/car_model_input_layout">
+
+                <AutoCompleteTextView
+                    android:id="@+id/car_color_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:focusable="false"
+                    android:hint="Colore" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/car_plate_input_layout"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:enabled="false"
+                android:hint="Targa"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/car_color_input_layout">
+
+                <EditText
+                    android:id="@+id/car_plate_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:singleLine="true"
+                    android:hint="Targa" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btn_modifiy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Modifica"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/car_plate_input_layout" />
+
+            <Button
+                android:id="@+id/delete_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:text="Conferma"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/car_plate_input_layout" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

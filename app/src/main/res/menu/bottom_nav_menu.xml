@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/searchRide"
+        android:title="Cerca"
+        android:icon="@drawable/baseline_search_24"/>
+    <item
+        android:id="@+id/createRide"
+        android:title="Crea"
+        android:icon="@drawable/baseline_map_24"/>
+    <item android:title="Attività"
+        android:id="@+id/activities"
+        android:icon="@drawable/baseline_bookmarks_24"/>
+    <item android:title="Profilo"
+        android:id="@+id/profile"
+        android:icon="@drawable/baseline_account_circle_24"/>
+</menu>

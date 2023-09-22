@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/dialog_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="5dp"
+        android:text="Conferma creazione"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_name_input_layout"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:hint="Nome"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dialog_type">
+
+        <EditText
+            android:id="@+id/place_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:singleLine="true"
+            android:maxLength="50"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_lat_input_layout"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp"
+        android:hint="Latitudine"
+        app:layout_constraintEnd_toEndOf="@+id/place_name_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/place_name_input_layout"
+        app:layout_constraintTop_toTopOf="@+id/place_name_input_layout">
+
+        <EditText
+            android:id="@+id/place_lat"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="false"
+            android:inputType="numberDecimal" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_lon_input_layout"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp"
+        android:hint="Longitudine"
+        app:layout_constraintEnd_toEndOf="@+id/place_lat_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/place_lat_input_layout"
+        app:layout_constraintTop_toTopOf="@+id/place_lat_input_layout">
+
+        <EditText
+            android:id="@+id/place_lon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="false"
+            android:inputType="numberDecimal" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/place_type_input_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp"
+        android:hint="Tipologia"
+        app:layout_constraintEnd_toEndOf="@+id/place_lon_input_layout"
+        app:layout_constraintStart_toStartOf="@+id/place_lon_input_layout"
+        app:layout_constraintTop_toTopOf="@+id/place_lon_input_layout">
+
+        <AutoCompleteTextView
+            android:id="@+id/place_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:hint="Tipologia" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/action_btn"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp"
+        android:layout_marginBottom="20dp"
+        android:text="Conferma"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/place_type_input_layout" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

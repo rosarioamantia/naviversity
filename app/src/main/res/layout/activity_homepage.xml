@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomepageActivity">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/frameLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:name="com.rosario.naviversity.SearchRideFragment"/>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/notification_card"
+        android:layout_width="300dp"
+        android:layout_height="400dp"
+        android:layout_marginEnd="10dp"
+        app:cardBackgroundColor="@color/light_blue"
+        app:cardCornerRadius="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/notification_icon"
+        app:layout_constraintEnd_toEndOf="@+id/notification_icon">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mRecyclerView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/notification_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/baseline_notifications_24"
+        app:layout_constraintBottom_toBottomOf="@+id/frameLayout"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/badge_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="-15dp"
+        android:layout_marginBottom="-15dp"
+        android:background="@drawable/badge_circle"
+        android:paddingStart="4dp"
+        android:visibility="gone"
+        android:paddingEnd="4dp"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toTopOf="@+id/notification_icon"
+        app:layout_constraintEnd_toStartOf="@+id/notification_icon" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

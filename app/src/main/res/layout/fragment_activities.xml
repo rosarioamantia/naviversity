@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ActivitiesFragment">
+
+    <TextView
+        android:id="@+id/missing_activities"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nessuna attività presente"
+        android:drawableTop="@drawable/baseline_car_crash_24"
+        android:textSize="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/rate_card"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:visibility="gone"
+        android:layout_margin="20dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/mRecyclerView"
+        app:layout_constraintTop_toTopOf="@+id/mRecyclerView">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vota il conducente"
+                android:textSize="25sp"
+                app:layout_constraintBottom_toTopOf="@+id/rating_bar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <RatingBar
+                android:id="@+id/rating_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:rating="3"
+                android:stepSize="1"
+                app:layout_constraintBottom_toTopOf="@+id/rate_btn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+            <Button
+                android:id="@+id/discard_btn"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="Annulla"
+                app:layout_constraintBottom_toBottomOf="@+id/rate_btn"
+                app:layout_constraintEnd_toStartOf="@+id/rate_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/rate_btn" />
+
+            <Button
+                android:id="@+id/rate_btn"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:text="Conferma"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/discard_btn" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/mRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

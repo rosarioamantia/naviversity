@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1036330261973",
+    "firebase_url": "https://naviversity-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "naviversity",
+    "storage_bucket": "naviversity.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1036330261973:android:7c31d17c6817493e84b15c",
+        "android_client_info": {
+          "package_name": "com.rosario.naviversity"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1036330261973-tnqjcnnmlpb5j6p58atkp97go9j47jpa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9Pdouy6twg5uEA9lW8Awt-i8m6HM8phk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1036330261973-tnqjcnnmlpb5j6p58atkp97go9j47jpa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

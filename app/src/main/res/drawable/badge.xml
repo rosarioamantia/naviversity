@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Icona principale -->
+    <item android:drawable="@drawable/baseline_notifications_24" />
+
+    <item
+        android:drawable="@drawable/badge_circle"
+        android:gravity="top|end">
+        <!-- Testo del badge -->
+        <item
+            android:id="@+id/badge_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:background="@drawable/badge_background"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
+    </item>
+</layer-list>

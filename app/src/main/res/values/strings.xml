@@ -1,3 +1,43 @@
 <resources>
-    <string name="app_name">naviversity</string>
+    <string name="app_name">Naviversity</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="submit">Inserisci destinazione</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="registration">Registration</string>
+    <string name="register">Register</string>
+    <string name="crea_account">Crea Account</string>
+    <string name="registration_name">Nome</string>
+    <string name="registration_surname">Cognome</string>
+    <string name="registration_number">Numero di Telefono</string>
+    <string name="registration_phone">Numero di Telefono</string>
+    <string name="error_weak_password">Password troppo corta</string>
+    <string name="error_invalid_email">Email non valida</string>
+    <string name="error_user_exists">Utente esistente</string>
+
+    <string-array name="car_colors">
+        <item>Rosso</item>
+        <item>Nero</item>
+        <item>Blu</item>
+        <item>Bianco</item>
+        <item>Verde</item>
+        <item>Grigio</item>
+        <item>Arancione</item>
+        <item>Giallo</item>
+    </string-array>
+
+    <string-array name="car_models">
+        <item>FIAT</item>
+        <item>RENAULT</item>
+        <item>FORD</item>
+        <item>AUDI</item>
+        <item>BMW</item>
+        <item>NISSAN</item>
+    </string-array>
+
+    <string-array name="place_types">
+        <item>Partenza</item>
+        <item>Destinazione</item>
+    </string-array>
 </resources>
