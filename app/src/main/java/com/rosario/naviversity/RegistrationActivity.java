@@ -1,29 +1,17 @@
 package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
-import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -32,11 +20,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -55,12 +38,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 public class RegistrationActivity extends AppCompatActivity {
+    final static String USER_NODE = "/user/";
     private final int PICK_IMAGE_REQUEST = 100;
     private final int READ_STORAGE_REQUEST = 200;
     Button btnReg;
@@ -251,8 +234,7 @@ public class RegistrationActivity extends AppCompatActivity {
         Map<String, Object> userValues = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/user/" + key, userValues);
-        //es. childUpdates.put("/ride/organizers" + key, userValues);
+        childUpdates.put(USER_NODE + key, userValues);
 
         dbReference.updateChildren(childUpdates);
     }
@@ -266,7 +248,7 @@ public class RegistrationActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Uri uri) {
                         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                .setPhotoUri(profileImageUri)  //TODO valuta se cambiare con uri parametro (riga sopra)
+                                .setPhotoUri(profileImageUri)
                                 .build();
                         fUser.updateProfile(profileUpdates);
                     }
@@ -289,15 +271,13 @@ public class RegistrationActivity extends AppCompatActivity {
             editTextEmail.requestFocus();
             return false;
         }
-        /* SBLOCCA PER CONTROLLARE DOMINIO MAIL
         else{
             if(!email.matches(unictRegexPattern)){
-                editTextEmail.setError("Inserire un'email unict");
+                editTextEmail.setError("Inserire un'e-mail unict");
                 editTextEmail.requestFocus();
                 return false;
             }
         }
-         */
         if(TextUtils.isEmpty(password)){
             editTextPassword.setError("Inserire una password");
             editTextPassword.requestFocus();

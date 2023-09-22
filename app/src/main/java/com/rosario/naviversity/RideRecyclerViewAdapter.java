@@ -1,29 +1,20 @@
 package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
-
-import static java.security.AccessController.getContext;
-
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RatingBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,7 +30,11 @@ import java.util.List;
 import java.util.Map;
 
 public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerViewAdapter.MyViewHolder>{
-
+    final static String NOTIFICATION_NODE = "/notification/";
+    final static String USER_NODE = "/user/";
+    final static String RIDE_NODE = "/ride/";
+    final static String MEMBER_NODE = "/members/";
+    final static String VOTED_OWNER_NODE = "/votedOwner/";
     Context context;
     ArrayList<Ride> listRides;
     String currentUserId;
@@ -210,7 +205,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User rideOwner = snapshot.getValue(User.class);
-                childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
+                childUpdates.put(RIDE_NODE + ride.getId() + MEMBER_NODE + currentUserId, null);
 
                 HashMap<String, String> ownerNotification = rideOwner.getNotification();
                 HashMap<String, String> userNotification = currentUser.getNotification();
@@ -225,11 +220,11 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
                 String memberMessage = generateMessageNotificationMember(ride);
                 userNotification.put(keyDateTime, memberMessage);
-                childUpdates.put("/user/" + currentUser.getId() + "/notification/", userNotification);
+                childUpdates.put(USER_NODE + currentUser.getId() + NOTIFICATION_NODE, userNotification);
 
                 String ownerMessage = generateMessageNotificationOwner(ride, currentUser);
                 ownerNotification.put(keyDateTime, ownerMessage);
-                childUpdates.put("/user/" + ride.getOwner() + "/notification/", ownerNotification);
+                childUpdates.put(USER_NODE + ride.getOwner() + NOTIFICATION_NODE, ownerNotification);
 
                 dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -247,35 +242,6 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                 Log.e(TAG, error.getMessage());
             }
         });
-
-
-
-
-//        dbReference.child("user").child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() { TODO cancella!!!
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                User dbUser = snapshot.getValue(User.class);
-//                dbUser.setId(snapshot.getKey());
-//                HashMap<String, String> notifications = dbUser.getNotifications();
-//
-//                if(notifications == null){
-//                    notifications = new HashMap<>();
-//                }
-//                String keyDateTime = generateKeyNotification();
-//                String message = generateMessageNotificationMember(ride);
-//                notifications.put(keyDateTime, message);
-//                dbUser.setNotifications(notifications);   //ti sei cancellato dalla corsa...       lo studente xx si è cancellato dalla tua corsa
-//                childUpdates.put("/user/" + snapshot.getKey(), dbUser);
-//                childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId, null);
-//
-//
-//                dbReference.updateChildren(childUpdates);
-//            }
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//                Log.e(TAG, error.getMessage());
-//            }
-//        });
     }
     public void deleteRide(Ride ride){
         Map<String, Object> childUpdates = new HashMap<>();
@@ -298,10 +264,10 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                         String message = generateMessageNotification(ride, dbUser);
                         notifications.put(keyDateTime, message);
                         dbUser.setNotification(notifications);
-                        childUpdates.put("/user/" + dbUser.getId(), dbUser);
+                        childUpdates.put(USER_NODE + dbUser.getId(), dbUser);
                     }
                 }
-                childUpdates.put("/ride/" + ride.getId(), null);
+                childUpdates.put(RIDE_NODE + ride.getId(), null);
                 dbReference.updateChildren(childUpdates);
             }
 
@@ -349,6 +315,8 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
         rateCard.setVisibility(View.VISIBLE);
         RatingBar ratingBar = rateCard.findViewById(R.id.rating_bar);
+
+        //confirm rating
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -366,9 +334,9 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                         Map<String, Object> userValues = owner.toMap();
                         Map<String, Object> childUpdates = new HashMap<>();
 
-                        childUpdates.put("/user/" + RideOwnerId, userValues);
-                        childUpdates.put("/ride/" + ride.getId() + "/members/" + RideOwnerId, userValues);
-                        childUpdates.put("/ride/" + ride.getId() + "/members/" + currentUserId + "/votedOwner/", "true");
+                        childUpdates.put(USER_NODE + RideOwnerId, userValues);
+                        childUpdates.put(RIDE_NODE + ride.getId() + MEMBER_NODE + RideOwnerId, userValues);
+                        childUpdates.put(RIDE_NODE + ride.getId() + MEMBER_NODE + currentUserId + VOTED_OWNER_NODE, "true");
 
                         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override

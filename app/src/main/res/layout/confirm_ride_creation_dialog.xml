@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:gravity="center_horizontal">
 
     <TextView
@@ -22,23 +22,22 @@
 
     <TextView
         android:id="@+id/rideStart"
-        android:layout_width="220dp"
+        android:layout_width="180dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginEnd="20dp"
         android:ellipsize="end"
         android:gravity="end"
         android:maxLines="2"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmText" />
+        app:layout_constraintTop_toTopOf="@+id/textStart" />
 
     <TextView
         android:id="@+id/textStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
         android:text="Partenza"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -49,47 +48,43 @@
         android:id="@+id/textStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="20dp"
         android:text="Destinazione"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textStart"
         app:layout_constraintTop_toBottomOf="@+id/textStart" />
 
 
     <TextView
         android:id="@+id/rideStop"
-        android:layout_width="220dp"
+        android:layout_width="180dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="30dp"
         android:ellipsize="end"
         android:gravity="end"
         android:maxLines="2"
         android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/rideStart"
         app:layout_constraintTop_toTopOf="@+id/textStop" />
 
     <TextView
         android:id="@+id/textDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
         android:text="Data"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textStop"
         app:layout_constraintTop_toTopOf="@+id/dateInputLayout" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/dateInputLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginTop="10dp"
         android:hint="Seleziona la data"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/rideStop"
         app:layout_constraintTop_toBottomOf="@+id/rideStop">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -115,11 +110,10 @@
         android:id="@+id/timeInputLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="95dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginTop="80dp"
         android:focusable="false"
         android:hint="Seleziona l'orario"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/dateInputLayout"
         app:layout_constraintTop_toTopOf="@+id/dateInputLayout">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -134,8 +128,8 @@
         android:id="@+id/btnConfirm"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="40dp"
         android:text="Conferma"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

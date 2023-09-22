@@ -20,17 +20,12 @@
         android:id="@+id/notification_card"
         android:layout_width="300dp"
         android:layout_height="400dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginEnd="10dp"
+        app:cardBackgroundColor="@color/light_blue"
         app:cardCornerRadius="20dp"
         android:visibility="gone"
-        app:cardBackgroundColor="@color/light_blue"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintBottom_toTopOf="@+id/notification_icon"
+        app:layout_constraintEnd_toEndOf="@+id/notification_icon">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/card_layout"
@@ -50,7 +45,7 @@
     </androidx.cardview.widget.CardView>
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/notification_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
@@ -72,8 +67,8 @@
         android:paddingEnd="4dp"
         android:textColor="#FFFFFF"
         android:textSize="12sp"
-        app:layout_constraintBottom_toTopOf="@+id/imageView"
-        app:layout_constraintEnd_toStartOf="@+id/imageView" />
+        app:layout_constraintBottom_toTopOf="@+id/notification_icon"
+        app:layout_constraintEnd_toStartOf="@+id/notification_icon" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"

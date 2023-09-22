@@ -50,7 +50,6 @@
                 android:maxLines="1"
                 android:focusable="true"
                 android:hint="@string/email"
-                android:text="rosario.am@outlook.it"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="371dp" />
 
@@ -74,7 +73,6 @@
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
                 android:focusable="true"
-                android:text="xxxxxxx"
                 android:maxLines="1"
                 android:hint="@string/password"
                 tools:layout_editor_absoluteX="1dp"
@@ -100,7 +98,6 @@
                 android:focusable="true"
                 android:maxLines="1"
                 android:hint="@string/registration_name"
-                android:text="Rosario"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="371dp" />
 
@@ -124,7 +121,6 @@
                 android:layout_height="wrap_content"
                 android:focusable="true"
                 android:maxLines="1"
-                android:text="Amantia"
                 android:hint="@string/registration_surname"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="371dp" />
@@ -150,7 +146,6 @@
                 android:focusable="true"
                 android:hint="@string/registration_phone"
                 android:maxLines="1"
-                android:text="3450538443"
                 android:inputType="phone"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="371dp" />

@@ -67,7 +67,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SearchRideFragment extends Fragment {
     GoogleMap googleMap;
@@ -113,7 +112,7 @@ public class SearchRideFragment extends Fragment {
             searchCard.setVisibility(View.GONE);
             btnRepeatSearch.setVisibility(View.VISIBLE);
 
-            //insert marker
+            //unique and clickable marker to choose ride
             LatLng startCoordinates = new LatLng(start.getLatitude(), start.getLongitude());
             positionMarker = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
             positionMarker.setSnippet("Tocca per visualizzare le corse disponibili");
@@ -298,12 +297,11 @@ public class SearchRideFragment extends Fragment {
                             Manifest.permission.ACCESS_FINE_LOCATION, false);
 
                     if (fineLocationGranted && coarseLocationGranted) {
-                        //aggiorna posizione
-                        LocationRequest lr = LocationRequest.create();
-                        lr.setInterval(100);
-                        lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                        LocationRequest locationRequest = LocationRequest.create();
+                        locationRequest.setInterval(100);
+                        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-                        LocationCallback lc = new LocationCallback() {
+                        LocationCallback locationCallback = new LocationCallback() {
                             @Override
                             public void onLocationResult(@NonNull LocationResult locationResult) {
                                 super.onLocationResult(locationResult);
@@ -313,7 +311,7 @@ public class SearchRideFragment extends Fragment {
                         if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                             return;
                         }
-                        fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
+                        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         Task<Location> task = fusedLocationClient.getLastLocation();
                         task.addOnSuccessListener(new OnSuccessListener<Location>() {
                             @Override
@@ -344,7 +342,6 @@ public class SearchRideFragment extends Fragment {
                                                             if(!listRides.isEmpty()){
                                                                 mapFragment.getMapAsync(callback);
                                                             }else{
-                                                                //TODO controlla gestione
                                                                 Toast.makeText(getContext(), "Nessuna corsa trovata", Toast.LENGTH_SHORT).show();
                                                             }
                                                         }
@@ -378,6 +375,7 @@ public class SearchRideFragment extends Fragment {
         requestPermissionLauncher.launch(permissions);
     }
 
+    //Ride eligible with a difference in time of maximum 30 minutes
     public boolean checkIsRideEligible(Ride ride){
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         String currentUserId = currentUser.getUid();

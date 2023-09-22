@@ -5,7 +5,7 @@ import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashScreenActivity extends AppCompatActivity {
-    private static final long SPLASH_SCREEN_DURATION = 100; //TODO CAMBIA in 2000
+    private static final long SPLASH_SCREEN_DURATION = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

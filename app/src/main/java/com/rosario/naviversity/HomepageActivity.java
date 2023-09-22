@@ -8,36 +8,21 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
-
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.AutoCompleteTextView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
-import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HomepageActivity extends AppCompatActivity {
+    final static String USER_NODE = "/user/";
     BottomNavigationView bottomNavigationView;
     RecyclerView notificationRecyclerView;
     FrameLayout frameLayout;
@@ -54,6 +40,8 @@ public class HomepageActivity extends AppCompatActivity {
     User currentUser;
     List<String> listNotify;
     CardView notificationCard;
+    ImageView notifcationIcon;
+    ValueEventListener getNotificationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,71 +51,69 @@ public class HomepageActivity extends AppCompatActivity {
         dbReference = mDatabase.getReference();
         notificationRecyclerView = findViewById(R.id.mRecyclerView);
         mAuth = FirebaseAuth.getInstance();
-        TextView t = findViewById(R.id.badge_count);
-        ImageView i = findViewById(R.id.imageView);
+        TextView badgeCount = findViewById(R.id.badge_count);
+        notifcationIcon = findViewById(R.id.notification_icon);
         notificationCard = findViewById(R.id.notification_card);
-
-        dbReference.child("user").child(mAuth.getUid()).addValueEventListener(new ValueEventListener() {
+        getNotificationListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 currentUser = snapshot.getValue(User.class);
                 if(currentUser.getNotification() != null){
                     if(currentUser.getLastNotificationNumber() < currentUser.getNotification().size()){
-                        t.setVisibility(View.VISIBLE);
-                        int ciao = currentUser.getNotification().size() - currentUser.getLastNotificationNumber();
-                        t.setText(ciao + "");
+                        badgeCount.setVisibility(View.VISIBLE);
+                        int newNotification = currentUser.getNotification().size() - currentUser.getLastNotificationNumber();
+                        badgeCount.setText(String.valueOf(newNotification));
                     }
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
-        });
+        };
 
-        i.setOnClickListener(new View.OnClickListener() {
+        //real-time for notification adding
+        dbReference.child("user").child(mAuth.getUid()).addValueEventListener(getNotificationListener);
+
+        notifcationIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(notificationCard.getVisibility() == View.GONE){
-                    notificationCard.setVisibility(View.VISIBLE);
-                    t.setVisibility(View.GONE);
-
-                    currentUser.setLastNotificationNumber(currentUser.getNotification().size());
-                    Map<String, Object> userValues = currentUser.toMap();
-                    Map<String, Object> childUpdates = new HashMap<>();
-
-                    childUpdates.put("/user/" + mAuth.getUid() , userValues);
-                    dbReference.updateChildren(childUpdates);
-
-                    dbReference.child("user").child(mAuth.getUid()).child("notification").orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if(listNotify == null){
+                if(currentUser.getNotification() != null){
+                    if(notificationCard.getVisibility() == View.GONE){
+                        dbReference.child("user").child(mAuth.getUid()).child("notification").orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
                                 listNotify = new ArrayList<>();
-                            }
-                            for(DataSnapshot item : snapshot.getChildren()){
-                                listNotify.add((String) item.getValue());
-                            }
-                            //HashMap<String, String> ciao = snapshot.getValue(HashMap.class);
-                            //listNotify = extractListNotify(ciao);
-                            if(listNotify != null){
-                                Collections.reverse(listNotify);
-                                NotificationRecyclerViewAdapter adapter = new NotificationRecyclerViewAdapter(listNotify);
-                                notificationRecyclerView.setAdapter(adapter);
-                                notificationRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-                            }
-                        }
+                                for(DataSnapshot item : snapshot.getChildren()){
+                                    listNotify.add((String) item.getValue());
+                                }
+                                if(listNotify != null){
+                                    currentUser.setLastNotificationNumber(currentUser.getNotification().size());
+                                    Map<String, Object> userValues = currentUser.toMap();
+                                    Map<String, Object> childUpdates = new HashMap<>();
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
+                                    childUpdates.put(USER_NODE + mAuth.getUid() , userValues);
+                                    dbReference.updateChildren(childUpdates);
+                                    Collections.reverse(listNotify);
+                                    NotificationRecyclerViewAdapter adapter = new NotificationRecyclerViewAdapter(listNotify);
+                                    notificationRecyclerView.setAdapter(adapter);
+                                    notificationRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
-                        }
-                    });
+                                    notificationCard.setVisibility(View.VISIBLE);
+                                    badgeCount.setVisibility(View.GONE);
+                                }
+                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+                    }else{
+                        notificationCard.setVisibility(View.GONE);
+                    }
                 }else{
-                    notificationCard.setVisibility(View.GONE);
+                    Toast.makeText(getApplicationContext(), "Non hai ancora nessuna notifica", Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
 
@@ -153,23 +139,8 @@ public class HomepageActivity extends AppCompatActivity {
         });
     }
 
-    private List<String> extractListNotify(HashMap<String, String> notification){
-        HashMap<String, String> actualUserNotification = notification;
-
-        List<String> notificationList = new ArrayList<>();
-
-
-        if(actualUserNotification != null){
-            for(Map.Entry<String, String> entry : actualUserNotification.entrySet()) {
-                String notific = entry.getValue();
-                notificationList.add(notific);
-            }
-            return notificationList;
-        }
-        return null;
-    }
-
     private void replaceFragment(Fragment fragment){
+        notificationCard.setVisibility(View.GONE);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frameLayout, fragment);

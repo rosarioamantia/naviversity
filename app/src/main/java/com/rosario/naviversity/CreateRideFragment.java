@@ -9,8 +9,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -19,7 +17,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
-import android.renderscript.Sampler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,7 +50,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -65,6 +61,9 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateRideFragment extends Fragment {
+    final static String NOTIFICATION_NODE = "/notification/";
+    final static String USER_NODE = "/user/";
+    final static String RIDE_NODE = "/ride/";
     GoogleMap googleMap;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
@@ -85,13 +84,14 @@ public class CreateRideFragment extends Fragment {
     ValueEventListener fillPlacesListener, getUserListener;
     OnSuccessListener<Location> locationListener;
     Task<Location> locationTask;
-    GoogleMap.OnInfoWindowClickListener manageInfoWindowClick;
+    GoogleMap.OnInfoWindowClickListener manageInfoWindowClickListeners;
     private OnMapReadyCallback mapCallback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
             if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
+                    != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return;
             }
             setGoogleMap(googleMap);
 
@@ -101,7 +101,9 @@ public class CreateRideFragment extends Fragment {
             googleMap.setBuildingsEnabled(false);
             LatLng currentLatLang = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(currentLatLang,14, 1, 1)));
-            manageInfoWindowClick = new GoogleMap.OnInfoWindowClickListener() {
+
+            //managing interactive experience to create a ride
+            manageInfoWindowClickListeners = new GoogleMap.OnInfoWindowClickListener() {
                 @Override
                 public void onInfoWindowClick(@NonNull Marker marker) {
                     Place selectedPlace = getSelectedPlace(marker);
@@ -114,9 +116,10 @@ public class CreateRideFragment extends Fragment {
                         View confirmRideCreationView = getLayoutInflater().inflate(R.layout.confirm_ride_creation_dialog, null, false);
                         showConfirmRideCreationDialog(confirmRideCreationView, googleMap);
                     }
+                    googleMap.setOnInfoWindowClickListener(manageInfoWindowClickListeners);
                 }
             };
-            googleMap.setOnInfoWindowClickListener(manageInfoWindowClick);
+            googleMap.setOnInfoWindowClickListener(manageInfoWindowClickListeners);
         }
     };
 
@@ -137,12 +140,12 @@ public class CreateRideFragment extends Fragment {
                     Boolean coarseLocationGranted = result.getOrDefault(
                             Manifest.permission.ACCESS_FINE_LOCATION, false);
 
-                    if (fineLocationGranted || coarseLocationGranted) {
-                        LocationRequest lr = LocationRequest.create();
-                        lr.setInterval(100);
-                        lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                    if (fineLocationGranted && coarseLocationGranted) {
+                        LocationRequest locationRequest = LocationRequest.create();
+                        locationRequest.setInterval(100);
+                        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-                        LocationCallback lc = new LocationCallback() {
+                        LocationCallback locationCallback = new LocationCallback() {
                             @Override
                             public void onLocationResult(@NonNull LocationResult locationResult) {
                                 super.onLocationResult(locationResult);
@@ -152,7 +155,7 @@ public class CreateRideFragment extends Fragment {
                         if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                             return;
                         }
-                        fusedLocationClient.requestLocationUpdates(lr, lc, Looper.getMainLooper());
+                        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         locationTask = fusedLocationClient.getLastLocation();
                         locationListener = new OnSuccessListener<Location>() {
                             @Override
@@ -201,6 +204,7 @@ public class CreateRideFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 user = snapshot.getValue(User.class);
                 user.setId(snapshot.getKey());
+                dbReference.child("user").child(mAuth.getUid()).removeEventListener(getUserListener);
             }
 
             @Override
@@ -222,6 +226,7 @@ public class CreateRideFragment extends Fragment {
         }
     }
 
+    //get all places from Firebase to fill data structures
     private void getPlaces(GoogleMap googleMap) {
         fillPlacesListener = new ValueEventListener() {
             @Override
@@ -237,6 +242,7 @@ public class CreateRideFragment extends Fragment {
                         }
                     }
                 }
+                dbReference.child("place").removeEventListener(fillPlacesListener);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -247,10 +253,12 @@ public class CreateRideFragment extends Fragment {
         dbReference.child("place").addListenerForSingleValueEvent(fillPlacesListener);
     }
 
+    //check if the place is start type
     private boolean isStart(Place place){
         return place.getType().equals("START");
     }
 
+    //get the Place based on touched Marker info
     private Place getSelectedPlace(Marker marker){
         LatLng markerPosition = marker.getPosition();
         double markerLatitude = markerPosition.latitude;
@@ -275,6 +283,7 @@ public class CreateRideFragment extends Fragment {
         googleMap.addMarker(new MarkerOptions().position(placePosition).title(place.getName())).setSnippet("Tocca qui per selezionare come punto di " + placeType);
     }
 
+    //check filled View
     public boolean checkDateTime(View confirmRideCreationView){
         TextInputLayout dateInputLayout = confirmRideCreationView.findViewById(R.id.dateInputLayout);
         TextInputLayout timeInputLayout = confirmRideCreationView.findViewById(R.id.timeInputLayout);
@@ -305,6 +314,7 @@ public class CreateRideFragment extends Fragment {
         return true;
     }
 
+    //check if searching Ride to future
     public boolean checkFutureDateTime(TextInputLayout dateInputLayout, TextInputLayout timeInputLayout){
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
 
@@ -407,7 +417,7 @@ public class CreateRideFragment extends Fragment {
         Map<String, Object> rideValues = ride.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/ride/" + key, rideValues);
+        childUpdates.put(RIDE_NODE + key, rideValues);
 
         if(userNotification == null){
             userNotification = new HashMap<>();
@@ -415,7 +425,8 @@ public class CreateRideFragment extends Fragment {
         String keyDateTime = generateKeyNotification();
         String message = generateMessageNotificationOwner(ride);
         userNotification.put(keyDateTime, message);
-        childUpdates.put("/user/" + user.getId() + "/notification/", userNotification);
+        user.setNotification(userNotification);
+        childUpdates.put(USER_NODE + user.getId() + NOTIFICATION_NODE, userNotification);
 
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -431,6 +442,7 @@ public class CreateRideFragment extends Fragment {
         return message;
     }
 
+    //unique key linking date and time (for HashMap)
     public String generateKeyNotification(){
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
@@ -456,8 +468,5 @@ public class CreateRideFragment extends Fragment {
         if(dialog != null){
             dialog.setOnDismissListener(null);
         }
-        dbReference.child("place").removeEventListener(fillPlacesListener);
-        dbReference.child("user").child(mAuth.getUid()).removeEventListener(getUserListener);
-        googleMap.setOnInfoWindowClickListener(null);
     }
 }

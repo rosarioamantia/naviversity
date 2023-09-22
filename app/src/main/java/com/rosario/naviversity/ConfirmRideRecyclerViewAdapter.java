@@ -1,7 +1,6 @@
 package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
-
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,11 +10,8 @@ import android.widget.Button;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,10 +20,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -126,7 +119,6 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
 
                 ownerNotification.put(keyDateTime, messageOwner);
                 childUpdates.put(USER_NODE + rideOwner.getId() + NOTIFICATION_NODE, ownerNotification);
-
                 user.setNotification(null);
 
                 members.put(fAuth.getUid(), user);
@@ -153,12 +145,14 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
         });
     }
 
+    //message to write in notification node (owner)
     public String generateMessageNotificationOwner(Ride ride, User user){
         String message = "Lo studente " + user.getCompleteName() + " si è iscritto alla corsa che hai organizzato per giorno " + ride.getDate() +
                 " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
         return message;
     }
 
+    //message to write in notification node (member)
     public String generateMessageNotificationMember(Ride ride){
         String message = "Ti sei iscritto alla corsa di giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
         User rideOwner = ride.getMembers().get(ride.getOwner());
@@ -166,6 +160,7 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
         return message;
     }
 
+    //unique key linking date and time (for HashMap)
     public String generateKeyNotification(){
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");

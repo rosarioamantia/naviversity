@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,11 +33,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class AdministrationActivity extends AppCompatActivity implements OnMapReadyCallback {
+    static final double INIT_LAT = 37.51036888646457;
+    static final double INIT_LON = 15.085487628719221;
+    final static String PLACE_NODE = "/place/";
     GoogleMap googleMap;
     FirebaseAuth fAuth;
     DatabaseReference dbReference;
@@ -48,8 +49,6 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     HashMap <Marker, Place> markerPlaceMap = new HashMap<>();
     View.OnClickListener addPlaceListener, deletePlaceListener;
     Button btnLogout, confirmAddBtn, confirmDeleteBtn;
-    static final double INIT_LAT = 37.51036888646457;
-    static final double INIT_LON = 15.085487628719221;
     ValueEventListener placeDatabaseListener;
     GoogleMap.OnMapClickListener addMapsPlaceListener;
     GoogleMap.OnInfoWindowClickListener deleteMapsPlaceListener;
@@ -57,8 +56,8 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fAuth = FirebaseAuth.getInstance();
-        Toast.makeText(getApplicationContext(), "Tocca la mappa per creare nuovi luoghi", Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_administration);
+        Toast.makeText(getApplicationContext(), "Tocca la mappa per creare nuovi luoghi", Toast.LENGTH_SHORT).show();
         dbReference = FirebaseDatabase.getInstance().getReference();
         placeTypes = getResources().getStringArray(R.array.place_types);
         typeAdapter = new ArrayAdapter<>(getApplicationContext(),
@@ -88,6 +87,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         LatLng initCoordinates = new LatLng(INIT_LAT, INIT_LON);
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(initCoordinates,14, 1, 1)));
 
+        //get PLaces from Firebase db
         placeDatabaseListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -168,6 +168,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         googleMap.setOnInfoWindowClickListener(deleteMapsPlaceListener);
     }
 
+    //initial dialog window to add a place
     private void setInitialDialogDataAdd(View dialogView, LatLng latLng){
         EditText placeLatTxt = dialogView.findViewById(R.id.place_lat);
         EditText placeLonTxt = dialogView.findViewById(R.id.place_lon);
@@ -177,6 +178,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         placeTypeTxt.setAdapter(typeAdapter);
     }
 
+    //initial dialog window to remove a place
     private void setInitialDialogDataDel(View dialogView, Place placeToDelete){
         TextView dialogTypeTxt = dialogView.findViewById(R.id.dialog_type);
         EditText placeNameTxt = dialogView.findViewById(R.id.place_name);
@@ -193,6 +195,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         placeTypeTxt.setFocusable(false);
     }
 
+    //check if all fields on dialog are filled
     public boolean checkFilledPlaceValues(View dialogView){
         String name, type;
         EditText placeNameTxt = dialogView.findViewById(R.id.place_name);
@@ -224,10 +227,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
 
         Map<String, Object> placeValues = newPlace.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
-
-        //one put -> one update in a different table
-        childUpdates.put("/place/" + key, placeValues);
-        //childUpdates.put("/user/ride_subscribed/" + key, rideValues);
+        childUpdates.put(PLACE_NODE + key, placeValues);
 
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -240,7 +240,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     public void deletePlace(Place placeToDelete, Marker marker, BottomSheetDialog dialog){
         Map<String, Object> childUpdates = new HashMap<>();
         //remove from Firebase
-        childUpdates.put("/place/" + placeToDelete.getId() , null);
+        childUpdates.put(PLACE_NODE + placeToDelete.getId() , null);
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {

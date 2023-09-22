@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProfileFragment extends Fragment {
+    final static String USER_NODE = "/user/";
     FirebaseAuth mAuth;
     FirebaseUser fUser;
     SwitchMaterial carSwitch;
@@ -163,7 +164,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         carSwitch = view.findViewById(R.id.car_switch);
         mAuth = FirebaseAuth.getInstance();
@@ -260,7 +260,6 @@ public class ProfileFragment extends Fragment {
                     carColorTxt.setAdapter(carColorsAdapter);
 
                 }else{
-                    //aggiungi controllo su corse create dall'utente
                     carConstraintLayout.setVisibility(View.GONE);
                     if(currentUser.getCar() != null){
                         deleteUserCar();
@@ -311,7 +310,7 @@ public class ProfileFragment extends Fragment {
         Map<String, Object> userValues = currentUser.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/user/" + currentUser.getId() , userValues);
+        childUpdates.put(USER_NODE + currentUser.getId() , userValues);
         dbReference.updateChildren(childUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -330,9 +329,13 @@ public class ProfileFragment extends Fragment {
         Map<String, Object> userValues = currentUser.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/user/" + currentUser.getId() , userValues);
-        dbReference.updateChildren(childUpdates);
-        Toast.makeText(getContext(), "Automobile aggiornata correttamente", Toast.LENGTH_SHORT).show();
+        childUpdates.put(USER_NODE + currentUser.getId() , userValues);
+        dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                Toast.makeText(getContext(), "Automobile aggiornata correttamente", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     public void addUserCar(){
         String carPlate = carPlateTxt.getText().toString();
@@ -344,9 +347,13 @@ public class ProfileFragment extends Fragment {
         Map<String, Object> userValues = currentUser.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/user/" + currentUser.getId() , userValues);
-        dbReference.updateChildren(childUpdates);
-        Toast.makeText(getContext(), "Automobile aggiunta correttamente", Toast.LENGTH_SHORT).show();
+        childUpdates.put(USER_NODE + currentUser.getId() , userValues);
+        dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                Toast.makeText(getContext(), "Automobile aggiunta correttamente", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     public boolean checkFilledCarValues(){
         String carModel = carModelTxt.getText().toString();
