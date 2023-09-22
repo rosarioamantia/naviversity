@@ -154,4 +154,5 @@ public class HomepageActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(null);
         finish();
     }
+
 }
