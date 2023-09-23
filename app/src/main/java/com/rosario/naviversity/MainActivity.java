@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }
-
     }
 
     @Override
@@ -99,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                                 finish();
                             }
                             else if(!currentUser.isEmailVerified()) {
-                                Toast.makeText(getApplicationContext(), R.string.unict_mail_verifiy, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.unict_mail_verify, Toast.LENGTH_SHORT).show();
                             }else{
                                 intent = new Intent(getApplicationContext(), HomepageActivity.class);
                                 startActivity(intent);

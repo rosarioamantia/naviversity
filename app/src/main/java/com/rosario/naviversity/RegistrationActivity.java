@@ -226,7 +226,7 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private void saveNewUserData(String name, String surname, String phone, FirebaseUser fUser){
-        User user = new User(name, surname, phone);
+        User user = new User(name, surname, phone, Role.USER);
         if(carSwitch.isChecked()){
             String model = String.valueOf(carModelTxt.getText());
             String plate = String.valueOf(carPlateTxt.getText()).toUpperCase();

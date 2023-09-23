@@ -61,8 +61,8 @@
     <string name="accept_all_permissions">Devi accettare tutti i permessi per usare correttamente l\'app</string>
     <string name="insert_mail">Inserisci e-mail</string>
     <string name="insert_password">Inserisci password</string>
-    <string name="unict_mail_verifiy">Devi prima verificare la tua email universitaria</string>
-    <string name="incorrect_credentials">Inserire le credenziali corrette</string>
+    <string name="unict_mail_verify">Devi prima verificare la tua email universitaria</string>
+    <string name="incorrect_credentials">Accesso non riuscito. Verifica i dati inseriti</string>
     <string name="image_updated">Immagine aggiornata</string>
     <string name="accept_storage_permission">Devi accettare i permessi allo storage del dispositivo</string>
     <string name="post_logout">Hai eseguito il logout</string>
