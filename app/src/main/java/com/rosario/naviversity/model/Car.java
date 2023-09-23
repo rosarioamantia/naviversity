@@ -1,4 +1,4 @@
-package com.rosario.naviversity;
+package com.rosario.naviversity.model;
 
 import com.google.firebase.database.Exclude;
 

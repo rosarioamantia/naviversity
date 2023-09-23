@@ -1,5 +1,7 @@
 package com.rosario.naviversity;
 
+import static com.rosario.naviversity.Constants.ADMIN_ID;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.Manifest;
@@ -26,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     OnCompleteListener<AuthResult> completeSignInListener;
     View.OnClickListener loginListener;
     static final int BASIC_PERMISSION_CODE = 100;
-    static final String ADMIN_ID = "TXk8jICPv7OF647FCW12XrLKtJu1";
     @Override
     public void onStart(){
         super.onStart();
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == BASIC_PERMISSION_CODE) {
             if (grantResults.length > 0 && (grantResults[0] != PackageManager.PERMISSION_GRANTED ||
                     grantResults[1] != PackageManager.PERMISSION_GRANTED)) {
-                Toast.makeText(getApplicationContext(), "Devi accettare tutti i permessi per usare correttamente l'app", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.accept_all_permissions, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btnLogin = (Button) this.findViewById(R.id.btnLogin);
+        btnLogin = findViewById(R.id.btnLogin);
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
         mAuth = FirebaseAuth.getInstance();
@@ -78,11 +79,11 @@ public class MainActivity extends AppCompatActivity {
                 password = String.valueOf(editTextPassword.getText());
 
                 if(TextUtils.isEmpty(email)){
-                    Toast.makeText(getApplicationContext(), "Enter email", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.insert_mail, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if(TextUtils.isEmpty(password)){
-                    Toast.makeText(getApplicationContext(), "Enter password", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.insert_password, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -98,14 +99,14 @@ public class MainActivity extends AppCompatActivity {
                                 finish();
                             }
                             else if(!currentUser.isEmailVerified()) {
-                                Toast.makeText(getApplicationContext(), "Devi prima verificare la tua email universitaria", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.unict_mail_verifiy, Toast.LENGTH_SHORT).show();
                             }else{
                                 intent = new Intent(getApplicationContext(), HomepageActivity.class);
                                 startActivity(intent);
                                 finish();
                             }
                         }else{
-                            Toast.makeText(getApplicationContext(), "Problema con la login", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), R.string.incorrect_credentials, Toast.LENGTH_SHORT).show();
                         }
                         mAuth.signInWithEmailAndPassword(email, password)
                                 .addOnCompleteListener(null);

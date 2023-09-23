@@ -1,12 +1,12 @@
 package com.rosario.naviversity;
+import static com.rosario.naviversity.Constants.SPLASH_SCREEN_DURATION;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashScreenActivity extends AppCompatActivity {
-    private static final long SPLASH_SCREEN_DURATION = 1000;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

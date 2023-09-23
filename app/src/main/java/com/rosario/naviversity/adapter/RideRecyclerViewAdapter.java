@@ -1,6 +1,12 @@
-package com.rosario.naviversity;
+package com.rosario.naviversity.adapter;
 
 import static android.content.ContentValues.TAG;
+import static com.rosario.naviversity.Constants.MEMBER_NODE;
+import static com.rosario.naviversity.Constants.NOTIFICATION_NODE;
+import static com.rosario.naviversity.Constants.RIDE_NODE;
+import static com.rosario.naviversity.Constants.USER_NODE;
+import static com.rosario.naviversity.Constants.VOTED_OWNER_NODE;
+
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +26,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rosario.naviversity.R;
+import com.rosario.naviversity.model.Car;
+import com.rosario.naviversity.model.Ride;
+import com.rosario.naviversity.model.User;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,11 +41,6 @@ import java.util.List;
 import java.util.Map;
 
 public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerViewAdapter.MyViewHolder>{
-    final static String NOTIFICATION_NODE = "/notification/";
-    final static String USER_NODE = "/user/";
-    final static String RIDE_NODE = "/ride/";
-    final static String MEMBER_NODE = "/members/";
-    final static String VOTED_OWNER_NODE = "/votedOwner/";
     Context context;
     ArrayList<Ride> listRides;
     String currentUserId;
@@ -172,14 +178,14 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                         deleteRide(ride);
                         listRides.remove(holder.getAdapterPosition());
                         notifyItemRemoved(holder.getAdapterPosition());
-                        Toast.makeText(context.getApplicationContext(), "Hai eliminato la corsa", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context.getApplicationContext(), R.string.deleted_ride, Toast.LENGTH_SHORT).show();
                     }
                 });
             }else{
                 holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        dbReference.child("user").child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                        dbReference.child(context.getString(R.string.db_user)).child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                 User currentUser = snapshot.getValue(User.class);
@@ -201,7 +207,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
     public void deleteRideMember(Ride ride, User currentUser, RideRecyclerViewAdapter.MyViewHolder holder){
         Map<String, Object> childUpdates = new HashMap<>();
 
-        dbReference.child("user").child(ride.getOwner()).addListenerForSingleValueEvent(new ValueEventListener() {
+        dbReference.child(context.getString(R.string.db_user)).child(ride.getOwner()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User rideOwner = snapshot.getValue(User.class);
@@ -229,7 +235,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                 dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        Toast.makeText(context.getApplicationContext(), "Ti sei cancellato dalla corsa", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context.getApplicationContext(), R.string.deleted_to_ride, Toast.LENGTH_SHORT).show();
                         listRides.remove(holder.getAdapterPosition());
                         notifyItemRemoved(holder.getAdapterPosition());
                     }
@@ -238,7 +244,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context.getApplicationContext(), context.getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
         });
@@ -247,7 +253,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         Map<String, Object> childUpdates = new HashMap<>();
 
         HashMap<String, User> rideMembers = ride.getMembers();
-        dbReference.child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+        dbReference.child(context.getString(R.string.db_user)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for(DataSnapshot child : snapshot.getChildren()){
@@ -261,7 +267,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                             notifications = new HashMap<>();
                         }
                         String keyDateTime = generateKeyNotification();
-                        String message = generateMessageNotification(ride, dbUser);
+                        String message = generateMessageNotificationBoth(ride, dbUser);
                         notifications.put(keyDateTime, message);
                         dbUser.setNotification(notifications);
                         childUpdates.put(USER_NODE + dbUser.getId(), dbUser);
@@ -278,40 +284,12 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         });
     }
 
-    public String generateMessageNotificationMember(Ride ride){
-        String message = "Ti sei cancellato dalla corsa  di giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "che andava da " + ride.getStart().getName() + " a " + ride.getStop().getName();
-        return message;
-    }
-
-    public String generateMessageNotificationOwner(Ride ride, User memberDeleted){
-        String message = "Lo studente " + memberDeleted.getCompleteName() + " si è cancellato dalla corsa che hai organizzato per giorno " + ride.getDate() +  " che va da " + ride.getStart().getName() + " a " + ride.getStop().getName();
-        return message;
-    }
-
-    public String generateKeyNotification(){
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
-        String key = now.format(formatter);
-        return key;
-    }
-
-    public String generateMessageNotification(Ride ride, User dbUser){
-        String message = "";
-        if(ride.getOwner().equals(dbUser.getId())){
-            message = "Hai eliminato la corsa ";
-        }else{
-            message = "L'organizzatore ha eliminato la corsa ";
-        }
-        message += "di giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "che andava da " + ride.getStart().getName() + " a " + ride.getStop().getName();
-        return message;
-    }
-
     public void initializeRatingCard(Ride ride, RideRecyclerViewAdapter.MyViewHolder holder){
         View rootView = holder.itemView.getRootView();
         Button confirmBtn = rootView.findViewById(R.id.rate_btn);
         Button discardBtn = rootView.findViewById(R.id.discard_btn);
         CardView rateCard = rootView.findViewById(R.id.rate_card);
-        String RideOwnerId = ride.getOwner();
+        String rideOwnerId = ride.getOwner();
 
         rateCard.setVisibility(View.VISIBLE);
         RatingBar ratingBar = rateCard.findViewById(R.id.rating_bar);
@@ -320,7 +298,7 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dbReference.child("user").child(RideOwnerId).addListenerForSingleValueEvent(new ValueEventListener() {
+                dbReference.child(context.getString(R.string.db_user)).child(rideOwnerId).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         User owner = snapshot.getValue(User.class);
@@ -334,8 +312,8 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                         Map<String, Object> userValues = owner.toMap();
                         Map<String, Object> childUpdates = new HashMap<>();
 
-                        childUpdates.put(USER_NODE + RideOwnerId, userValues);
-                        childUpdates.put(RIDE_NODE + ride.getId() + MEMBER_NODE + RideOwnerId, userValues);
+                        childUpdates.put(USER_NODE + rideOwnerId, userValues);
+                        childUpdates.put(RIDE_NODE + ride.getId() + MEMBER_NODE + rideOwnerId, userValues);
                         childUpdates.put(RIDE_NODE + ride.getId() + MEMBER_NODE + currentUserId + VOTED_OWNER_NODE, "true");
 
                         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -343,14 +321,14 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
                             public void onSuccess(Void unused) {
                                 rateCard.setVisibility(View.GONE);
                                 holder.rateBtn.setEnabled(false);
-                                Toast.makeText(context.getApplicationContext(), "grazie per il feedback", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context.getApplicationContext(), R.string.thanks_for_feedback, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context.getApplicationContext(), context.getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                         Log.e(TAG, error.getMessage());
                     }
                 });
@@ -385,5 +363,32 @@ public class RideRecyclerViewAdapter extends RecyclerView.Adapter<RideRecyclerVi
     }
     public boolean currentUserIsRideOwner(String currentUserId , String rideOwnerId){
         return currentUserId.equals(rideOwnerId);
+    }
+    public String generateMessageNotificationMember(Ride ride){
+        String message = "Ti sei cancellato dalla corsa  di giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "che andava da " + ride.getStart().getName() + " a " + ride.getStop().getName();
+        return message;
+    }
+
+    public String generateMessageNotificationOwner(Ride ride, User memberDeleted){
+        String message = "Lo studente " + memberDeleted.getCompleteName() + " si è cancellato dalla corsa che hai organizzato per giorno " + ride.getDate() +  " che va da " + ride.getStart().getName() + " a " + ride.getStop().getName();
+        return message;
+    }
+
+    public String generateKeyNotification(){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(context.getString(R.string.notification_key_pattern));
+        String key = now.format(formatter);
+        return key;
+    }
+
+    public String generateMessageNotificationBoth(Ride ride, User dbUser){
+        String message = "";
+        if(ride.getOwner().equals(dbUser.getId())){
+            message = "Hai eliminato la corsa ";
+        }else{
+            message = "L'organizzatore ha eliminato la corsa ";
+        }
+        message += "di giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "che andava da " + ride.getStart().getName() + " a " + ride.getStop().getName();
+        return message;
     }
 }

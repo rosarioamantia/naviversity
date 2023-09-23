@@ -2,6 +2,9 @@ package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
 
+import static com.rosario.naviversity.Constants.DB_PLACE;
+import static com.rosario.naviversity.Constants.DB_RIDE;
+
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -60,6 +63,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rosario.naviversity.adapter.ConfirmRideRecyclerViewAdapter;
+import com.rosario.naviversity.model.Place;
+import com.rosario.naviversity.model.Ride;
+import com.rosario.naviversity.model.User;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -115,7 +122,7 @@ public class SearchRideFragment extends Fragment {
             //unique and clickable marker to choose ride
             LatLng startCoordinates = new LatLng(start.getLatitude(), start.getLongitude());
             positionMarker = googleMap.addMarker(new MarkerOptions().position(startCoordinates).title(start.getName() + " - " +  stop.getName()));
-            positionMarker.setSnippet("Tocca per visualizzare le corse disponibili");
+            positionMarker.setSnippet(getString(R.string.touch_to_view_rides));
 
             positionMarker.showInfoWindow();
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(startCoordinates,15, 1, 1)));
@@ -190,7 +197,7 @@ public class SearchRideFragment extends Fragment {
         listStop = new ArrayList<Place>();
         startAdapter = new ArrayAdapter<Place>(getContext(), android.R.layout.simple_spinner_dropdown_item, listStart);
         stopAdapter = new ArrayAdapter<Place>(getContext(), android.R.layout.simple_spinner_dropdown_item, listStop);
-        placeReference = mDatabase.getReference("place");
+        placeReference = mDatabase.getReference(DB_PLACE);
         dbReference = mDatabase.getReference();
         mAuth = FirebaseAuth.getInstance();
         startTxt = view.findViewById(R.id.start_txt);
@@ -230,7 +237,7 @@ public class SearchRideFragment extends Fragment {
                 listStop.clear();
                 for(DataSnapshot child : snapshot.getChildren()){
                     Place place = child.getValue(Place.class);
-                    if(place.getType().equals("START")){
+                    if(place.getType().equals(getString(R.string.db_start))){
                         listStart.add(place);
                     }else{
                         listStop.add(place);
@@ -342,32 +349,32 @@ public class SearchRideFragment extends Fragment {
                                                             if(!listRides.isEmpty()){
                                                                 mapFragment.getMapAsync(callback);
                                                             }else{
-                                                                Toast.makeText(getContext(), "Nessuna corsa trovata", Toast.LENGTH_SHORT).show();
+                                                                Toast.makeText(getContext(), R.string.no_ride_found, Toast.LENGTH_SHORT).show();
                                                             }
                                                         }
                                                         @Override
                                                         public void onCancelled(@NonNull DatabaseError error) {
-                                                            Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(getContext(), getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                                                             Log.e(TAG, error.getMessage());
                                                         }
                                                     };
-                                                    dbReference.child("ride").addListenerForSingleValueEvent(searchRideListener);
+                                                    dbReference.child(DB_RIDE).addListenerForSingleValueEvent(searchRideListener);
                                                 }
                                             }
                                         });
                                     }
                                 }else{
                                     btnSearch.setEnabled(false);
-                                    Toast.makeText(getContext(), "Devi attivare la localizzazione per cercare una corsa", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), R.string.active_localization_search, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
                     } else {
-                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione esatta", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.accept_permission_position, Toast.LENGTH_SHORT).show();
                         btnSearch.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View btnView) {
-                                Toast.makeText(getContext(), "Devi accettare i permessi alla posizione esatta per fare una ricerca", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), R.string.accept_permission_position_search, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -423,20 +430,20 @@ public class SearchRideFragment extends Fragment {
         String dateValue = dateText.getText().toString();
 
         if(startValue.isEmpty()){
-            startLayout.setError("Inserire punto di partenza");
+            startLayout.setError(getString(R.string.insert_start));
             return false;
         }
         if(stopValue.isEmpty()){
-            stopLayout.setError("Inserire punto di destinazione");
+            stopLayout.setError(getString(R.string.insert_stop));
             return false;
         }
         if(dateValue.isEmpty()){
-            dateLayout.setError("Inserire giorno");
+            dateLayout.setError(getString(R.string.insert_day));
             dateLayout.setErrorIconDrawable(null);
             return false;
         }
         if(timeValue.isEmpty()){
-            timeLayout.setError("Inserire orario");
+            timeLayout.setError(getString(R.string.insert_time));
             timeLayout.setErrorIconDrawable(null);
             return false;
         }
@@ -457,7 +464,7 @@ public class SearchRideFragment extends Fragment {
         dateText.setOnClickListener(null);
         btnSearch.setOnClickListener(null);
         if(searchRideListener != null){
-            dbReference.child("ride").removeEventListener(searchRideListener);
+            dbReference.child(DB_RIDE).removeEventListener(searchRideListener);
         }
         placeReference.removeEventListener(fillPlaceListener);
     }
