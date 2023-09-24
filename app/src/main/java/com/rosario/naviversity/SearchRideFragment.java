@@ -103,7 +103,6 @@ public class SearchRideFragment extends Fragment {
     AutoCompleteTextView stopTxt;
     TextInputLayout startLayout, stopLayout, dateLayout, timeLayout;
     FusedLocationProviderClient fusedLocationClient;
-    Location currentLocation;
     ValueEventListener fillPlaceListener, searchRideListener;
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
@@ -185,6 +184,9 @@ public class SearchRideFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search_ride, container, false);
+        mDatabase = FirebaseDatabase.getInstance();
+        dbReference = mDatabase.getReference();
+        mAuth = FirebaseAuth.getInstance();
         btnSearch = view.findViewById(R.id.btn_search);
         btnRepeatSearch = view.findViewById(R.id.btn_repeat_search);
         btnClose = view.findViewById(R.id.btn_close);
@@ -192,14 +194,11 @@ public class SearchRideFragment extends Fragment {
         dateText = view.findViewById(R.id.date);
         timeText = view.findViewById(R.id.time);
         confirmDialog = new BottomSheetDialog(getContext());
-        mDatabase = FirebaseDatabase.getInstance();
         listStart = new ArrayList<Place>();
         listStop = new ArrayList<Place>();
         startAdapter = new ArrayAdapter<Place>(getContext(), android.R.layout.simple_spinner_dropdown_item, listStart);
         stopAdapter = new ArrayAdapter<Place>(getContext(), android.R.layout.simple_spinner_dropdown_item, listStop);
         placeReference = mDatabase.getReference(DB_PLACE);
-        dbReference = mDatabase.getReference();
-        mAuth = FirebaseAuth.getInstance();
         startTxt = view.findViewById(R.id.start_txt);
         stopTxt = view.findViewById(R.id.stop_txt);
         startTxt.setAdapter(startAdapter);
@@ -209,7 +208,16 @@ public class SearchRideFragment extends Fragment {
         stopLayout = view.findViewById(R.id.stop_layout);
         timeLayout = view.findViewById(R.id.time_layout);
         dateLayout = view.findViewById(R.id.date_layout);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
 
+        initializeListeners();
+        getLastLocation();
+
+
+        return view;
+    }
+
+    public void initializeListeners(){
         stopTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -289,10 +297,9 @@ public class SearchRideFragment extends Fragment {
                 timePicker.show();
             }
         });
-        return view;
     }
 
-    private void getLastLocation(View view){
+    private void getLastLocation(){
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
         ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
@@ -324,45 +331,7 @@ public class SearchRideFragment extends Fragment {
                             @Override
                             public void onSuccess(Location location) {
                                 if(location != null){
-                                    currentLocation = location;
-                                    SupportMapFragment mapFragment =
-                                            (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-
-                                    if (mapFragment != null) {
-                                        btnSearch.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View btnView) {
-                                                listRides.clear();
-                                                if(checkSearchValues(view)){
-                                                    searchRideListener = new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                            for(DataSnapshot ds : snapshot.getChildren()){
-                                                                ride = ds.getValue(Ride.class);
-                                                                if(ride != null){
-                                                                    ride.setId(ds.getKey());
-                                                                    if(checkIsRideEligible(ride)){
-                                                                        listRides.add(ride);
-                                                                    }
-                                                                }
-                                                            }
-                                                            if(!listRides.isEmpty()){
-                                                                mapFragment.getMapAsync(callback);
-                                                            }else{
-                                                                Toast.makeText(getContext(), R.string.no_ride_found, Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        }
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError error) {
-                                                            Toast.makeText(getContext(), getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
-                                                            Log.e(TAG, error.getMessage());
-                                                        }
-                                                    };
-                                                    dbReference.child(DB_RIDE).addListenerForSingleValueEvent(searchRideListener);
-                                                }
-                                            }
-                                        });
-                                    }
+                                    searchRides();
                                 }else{
                                     btnSearch.setEnabled(false);
                                     Toast.makeText(getContext(), R.string.active_localization_search, Toast.LENGTH_SHORT).show();
@@ -380,6 +349,51 @@ public class SearchRideFragment extends Fragment {
                     }
                 });
         requestPermissionLauncher.launch(permissions);
+    }
+
+    public void updateListRides(DataSnapshot snapshot){
+        for(DataSnapshot ds : snapshot.getChildren()){
+            ride = ds.getValue(Ride.class);
+            if(ride != null){
+                ride.setId(ds.getKey());
+                if(checkIsRideEligible(ride)){
+                    listRides.add(ride);
+                }
+            }
+        }
+    }
+
+    public void searchRides(){
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+        if (mapFragment != null) {
+            btnSearch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View btnView) {
+                    listRides.clear();
+                    if(checkSearchValues()){
+                        searchRideListener = new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                updateListRides(snapshot);
+                                if(!listRides.isEmpty()){
+                                    mapFragment.getMapAsync(callback);
+                                }else{
+                                    Toast.makeText(getContext(), R.string.no_ride_found, Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Toast.makeText(getContext(), getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
+                                Log.e(TAG, error.getMessage());
+                            }
+                        };
+                        dbReference.child(DB_RIDE).addListenerForSingleValueEvent(searchRideListener);
+                    }
+                }
+            });
+        }
     }
 
     //Ride eligible with a difference in time of maximum 30 minutes
@@ -406,12 +420,7 @@ public class SearchRideFragment extends Fragment {
         }
         return false;
     }
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
-        getLastLocation(view);
-    }
+
     public boolean checkIsTimeEligible(String pickerTime, String rideTime){
         LocalTime superiorLimit = LocalTime.parse(pickerTime).plus(31, ChronoUnit.MINUTES);
         LocalTime inferiorLimit = LocalTime.parse(pickerTime).minus(31, ChronoUnit.MINUTES);
@@ -423,7 +432,7 @@ public class SearchRideFragment extends Fragment {
         return false;
     }
 
-    public boolean checkSearchValues(View view){
+    public boolean checkSearchValues(){
         String startValue = startTxt.getText().toString();
         String stopValue = stopTxt.getText().toString();
         String timeValue = timeText.getText().toString();
