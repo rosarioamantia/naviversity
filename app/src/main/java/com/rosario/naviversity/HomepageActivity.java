@@ -125,6 +125,7 @@ public class HomepageActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), R.string.no_notification, Toast.LENGTH_SHORT).show();
                 }
             }
+
         });
 
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
