@@ -1,4 +1,4 @@
-package com.rosario.naviversity;
+package com.rosario.naviversity.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,6 +6,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.rosario.naviversity.R;
+
 import java.util.List;
 
 public class MembersRecyclerViewAdapter extends RecyclerView.Adapter<MembersRecyclerViewAdapter.MemberViewHolder> {

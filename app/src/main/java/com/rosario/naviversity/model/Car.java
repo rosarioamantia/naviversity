@@ -1,8 +1,10 @@
-package com.rosario.naviversity;
+package com.rosario.naviversity.model;
 
 import com.google.firebase.database.Exclude;
 
-public class Car {
+import java.io.Serializable;
+
+public class Car implements Serializable {
     @Exclude
     String id;
     private String plate;

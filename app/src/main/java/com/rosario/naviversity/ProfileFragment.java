@@ -2,6 +2,9 @@ package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
 
+import static com.rosario.naviversity.Constants.DB_USER;
+import static com.rosario.naviversity.Constants.USER_NODE;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
@@ -49,13 +52,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.rosario.naviversity.model.Car;
+import com.rosario.naviversity.model.User;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ProfileFragment extends Fragment {
-    final static String USER_NODE = "/user/";
     FirebaseAuth mAuth;
     FirebaseUser fUser;
     SwitchMaterial carSwitch;
@@ -104,7 +108,7 @@ public class ProfileFragment extends Fragment {
             });
 
     public void updateUserProfileImage(){
-        StorageReference profileImgRef = storageReference.child("/profile_images/" + fUser.getUid());
+        StorageReference profileImgRef = storageReference.child(getString(R.string.profile_images_path) + fUser.getUid());
 
         progressBar.setVisibility(View.VISIBLE);
         getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -122,7 +126,7 @@ public class ProfileFragment extends Fragment {
                         progressBar.setVisibility(View.GONE);
                         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                         profileImg.setImageURI(profileImageUri);
-                        Toast.makeText(getContext(), "Immagine aggiornata", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.image_updated, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -137,7 +141,7 @@ public class ProfileFragment extends Fragment {
                     if (result) {
                         launchImagePicker();
                     } else {
-                        Toast.makeText(getContext(), "Devi accettare i permessi allo storage del dispositivo", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.accept_storage_permission, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -233,18 +237,18 @@ public class ProfileFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
         };
 
-        dbReference.child("user").child(fUser.getUid()).addListenerForSingleValueEvent(UIDataListener);
+        dbReference.child(DB_USER).child(fUser.getUid()).addListenerForSingleValueEvent(UIDataListener);
 
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mAuth.signOut();
-                Toast.makeText(getContext(), "Hai eseguito il logout", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.post_logout, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getContext(), MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
@@ -317,7 +321,7 @@ public class ProfileFragment extends Fragment {
                 carModelTxt.setText(null);
                 carColorTxt.setText(null);
                 carPlateTxt.setText(null);
-                Toast.makeText(getContext(), "Automobile eliminata correttamente", Toast.LENGTH_SHORT).show();            }
+                Toast.makeText(getContext(), R.string.confirm_car_delete, Toast.LENGTH_SHORT).show();            }
         });
     }
     public void updateUserCar(){
@@ -333,7 +337,7 @@ public class ProfileFragment extends Fragment {
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Toast.makeText(getContext(), "Automobile aggiornata correttamente", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.confirm_car_update, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -351,7 +355,7 @@ public class ProfileFragment extends Fragment {
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Toast.makeText(getContext(), "Automobile aggiunta correttamente", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.confirm_car_addition, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -360,23 +364,23 @@ public class ProfileFragment extends Fragment {
         String carColor = carColorTxt.getText().toString();
         String carPlate = carPlateTxt.getText().toString();
         if(carModel.isEmpty()){
-            Toast.makeText(getContext(), "Devi inserire un modello di auto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.car_model_insert, Toast.LENGTH_SHORT).show();
             return false;
         }else if(carColor.isEmpty()){
-            Toast.makeText(getContext(), "Devi inserire un colore di auto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.car_color_insert, Toast.LENGTH_SHORT).show();
             return false;
         }else if(carPlate.isEmpty()){
-            Toast.makeText(getContext(), "Devi inserire una targa di auto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.car_plate_insert, Toast.LENGTH_SHORT).show();
             return false;
         }else if(!isValidCarPlate(carPlate.toUpperCase())){
-            Toast.makeText(getContext(), "Devi inserire una targa valida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.car_plate_valid_insert, Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
     }
 
     public boolean isValidCarPlate(String carPlate){
-        String plateRegex = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
+        String plateRegex = getString(R.string.italian_plate_regex);
         return carPlate.matches(plateRegex);
     }
     public boolean checkChangedCarValues(){
@@ -391,7 +395,7 @@ public class ProfileFragment extends Fragment {
     }
 
     public void setProfileImage(){
-        StorageReference fileRef = storageReference.child("/profile_images/" + fUser.getUid());
+        StorageReference fileRef = storageReference.child(getString(R.string.profile_images_path) + fUser.getUid());
         fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
@@ -405,7 +409,7 @@ public class ProfileFragment extends Fragment {
         super.onDestroy();
         profileImg.setOnClickListener(null);
         btnModify.setOnClickListener(null);
-        dbReference.child("user").child(fUser.getUid()).removeEventListener(UIDataListener);
+        dbReference.child(DB_USER).child(fUser.getUid()).removeEventListener(UIDataListener);
         btnLogout.setOnClickListener(null);
         carSwitch.setOnCheckedChangeListener(null);
         btnConfirm.setOnClickListener(null);

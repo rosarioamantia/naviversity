@@ -2,6 +2,13 @@ package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
 
+import static com.rosario.naviversity.Constants.DB_PLACE;
+import static com.rosario.naviversity.Constants.DB_RIDE;
+import static com.rosario.naviversity.Constants.DB_USER;
+import static com.rosario.naviversity.Constants.NOTIFICATION_NODE;
+import static com.rosario.naviversity.Constants.RIDE_NODE;
+import static com.rosario.naviversity.Constants.USER_NODE;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -50,6 +57,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rosario.naviversity.model.Car;
+import com.rosario.naviversity.model.Place;
+import com.rosario.naviversity.model.Ride;
+import com.rosario.naviversity.model.User;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -61,9 +73,6 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateRideFragment extends Fragment {
-    final static String NOTIFICATION_NODE = "/notification/";
-    final static String USER_NODE = "/user/";
-    final static String RIDE_NODE = "/ride/";
     GoogleMap googleMap;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
@@ -95,7 +104,7 @@ public class CreateRideFragment extends Fragment {
             }
             setGoogleMap(googleMap);
 
-            Toast.makeText(getContext(), "Scegli punto di partenza", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.choose_start, Toast.LENGTH_SHORT).show();
             getPlaces(googleMap);
             googleMap.setMyLocationEnabled(true);
             googleMap.setBuildingsEnabled(false);
@@ -164,13 +173,13 @@ public class CreateRideFragment extends Fragment {
                                     currentLocation = location;
                                     reloadGoogleMap(null);
                                 }else{
-                                    Toast.makeText(getContext(), "Devi attivare la localizzazione per creare una corsa", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), R.string.activate_localization, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         };
                         locationTask.addOnSuccessListener(locationListener);
                     } else {
-                        Toast.makeText(getContext(), "Devi accettare i permessi alla posizione esatta per creare una corsa", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.accept_permission_position_create, Toast.LENGTH_SHORT).show();
                     }
                 });
         requestPermissionLauncher.launch(permissions);
@@ -204,25 +213,25 @@ public class CreateRideFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 user = snapshot.getValue(User.class);
                 user.setId(snapshot.getKey());
-                dbReference.child("user").child(mAuth.getUid()).removeEventListener(getUserListener);
+                dbReference.child(DB_USER).child(mAuth.getUid()).removeEventListener(getUserListener);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
         };
 
-        dbReference.child("user").child(mAuth.getUid()).addListenerForSingleValueEvent(getUserListener);
+        dbReference.child(DB_USER).child(mAuth.getUid()).addListenerForSingleValueEvent(getUserListener);
 
         return view;
     }
 
     public void showStopPlaces(GoogleMap googleMap) {
-        Toast.makeText(getContext(), "Scegli destinazione", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), R.string.choose_destination, Toast.LENGTH_SHORT).show();
         for (Place stop : listStop) {
-            showMarker(googleMap, stop, "arrivo");
+            showMarker(googleMap, stop, getString(R.string.stop));
         }
     }
 
@@ -236,26 +245,26 @@ public class CreateRideFragment extends Fragment {
                         Place place = child.getValue(Place.class);
                         if (isStart(place)) {
                             listStart.add(place);
-                            showMarker(googleMap, place, "partenza");
+                            showMarker(googleMap, place, getString(R.string.start));
                         } else {
                             listStop.add(place);
                         }
                     }
                 }
-                dbReference.child("place").removeEventListener(fillPlacesListener);
+                dbReference.child(DB_PLACE).removeEventListener(fillPlacesListener);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
         };
-        dbReference.child("place").addListenerForSingleValueEvent(fillPlacesListener);
+        dbReference.child(DB_PLACE).addListenerForSingleValueEvent(fillPlacesListener);
     }
 
     //check if the place is start type
     private boolean isStart(Place place){
-        return place.getType().equals("START");
+        return place.getType().equals(getString(R.string.db_start));
     }
 
     //get the Place based on touched Marker info
@@ -280,7 +289,7 @@ public class CreateRideFragment extends Fragment {
         double lLatitude = place.getLatitude();
         double lLongitude = place.getLongitude();
         LatLng placePosition = new LatLng(lLatitude, lLongitude);
-        googleMap.addMarker(new MarkerOptions().position(placePosition).title(place.getName())).setSnippet("Tocca qui per selezionare come punto di " + placeType);
+        googleMap.addMarker(new MarkerOptions().position(placePosition).title(place.getName())).setSnippet(getString(R.string.selected_place_type) + placeType);
     }
 
     //check filled View
@@ -290,8 +299,8 @@ public class CreateRideFragment extends Fragment {
         timeInputLayout.setErrorIconDrawable(null);
         dateInputLayout.setErrorIconDrawable(null);
 
-        if(dateText.getText().toString().matches("")){
-            dateInputLayout.setError("Inserisci un valore");
+        if(dateText.getText().toString().isEmpty()){
+            dateInputLayout.setError(getString(R.string.insert_value));
             dateInputLayout.setErrorIconDrawable(null);
             return false;
         }else {
@@ -299,8 +308,8 @@ public class CreateRideFragment extends Fragment {
                 dateInputLayout.setError(null);
             }
         }
-        if(timeText.getText().toString().matches("")){
-            timeInputLayout.setError("Inserisci un valore");
+        if(timeText.getText().toString().isEmpty()){
+            timeInputLayout.setError(getString(R.string.insert_value));
             timeInputLayout.setErrorIconDrawable(null);
             return false;
         }else{
@@ -316,7 +325,7 @@ public class CreateRideFragment extends Fragment {
 
     //check if searching Ride to future
     public boolean checkFutureDateTime(TextInputLayout dateInputLayout, TextInputLayout timeInputLayout){
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(getString(R.string.date_format));
 
         LocalDate selectedDate = LocalDate.parse(dateText.getText().toString(), dateFormatter);
         LocalTime selectedTime = LocalTime.parse(timeText.getText().toString());
@@ -328,10 +337,10 @@ public class CreateRideFragment extends Fragment {
             if(selectedTime.isAfter(actualTime)) {
                 return true;
             }else{
-                timeInputLayout.setError("Orario non valido");
+                timeInputLayout.setError(getString(R.string.invalid_time));
             }
         }else{
-            dateInputLayout.setError("Data non valida");
+            dateInputLayout.setError(getString(R.string.invalid_date));
         }
         return false;
     }
@@ -375,7 +384,7 @@ public class CreateRideFragment extends Fragment {
                 timePicker = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hours, int minutes) {
-                        timeText.setText(String.format("%02d:%02d", hours, minutes) );
+                        timeText.setText(String.format(getString(R.string.time_format), hours, minutes) );
                     }
                 }, time.getHour(), time.getMinute(), true);
                 timePicker.show();
@@ -390,7 +399,7 @@ public class CreateRideFragment extends Fragment {
                         writeNewRide();
                         dialog.hide();
                     }else{
-                        Toast.makeText(getContext(), "Prima ti serve un'automobile", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.car_needed, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -405,7 +414,7 @@ public class CreateRideFragment extends Fragment {
     }
 
     private void writeNewRide(){
-        String key = dbReference.child("ride").push().getKey();
+        String key = dbReference.child(DB_RIDE).push().getKey();
         Car car = user.getCar();
         HashMap<String, String> userNotification = user.getNotification();
 
@@ -431,23 +440,10 @@ public class CreateRideFragment extends Fragment {
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Toast.makeText(getContext(), "Corsa creata correttamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.confirm_ride_creation, Toast.LENGTH_SHORT).show();
                 reloadGoogleMap(googleMap);
             }
         });
-    }
-
-    public String generateMessageNotificationOwner(Ride ride){
-        String message = "Hai creato una corsa per giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
-        return message;
-    }
-
-    //unique key linking date and time (for HashMap)
-    public String generateKeyNotification(){
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
-        String key = now.format(formatter);
-        return key;
     }
 
     private void setGoogleMap(GoogleMap gMap){
@@ -468,5 +464,18 @@ public class CreateRideFragment extends Fragment {
         if(dialog != null){
             dialog.setOnDismissListener(null);
         }
+    }
+
+    public String generateMessageNotificationOwner(Ride ride){
+        String message = "Hai creato una corsa per giorno " + ride.getDate() + " (" + ride.getTime() + ") " + "con partenza da " + ride.getStart().getName() + " e destinazione a " + ride.getStop().getName();
+        return message;
+    }
+
+    //unique key linking date and time (for HashMap)
+    public String generateKeyNotification(){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(getString(R.string.notification_key_pattern));
+        String key = now.format(formatter);
+        return key;
     }
 }

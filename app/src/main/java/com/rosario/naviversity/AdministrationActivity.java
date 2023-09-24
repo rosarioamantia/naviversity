@@ -2,6 +2,9 @@ package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
 
+import static com.rosario.naviversity.Constants.DB_PLACE;
+import static com.rosario.naviversity.Constants.PLACE_NODE;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,13 +36,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rosario.naviversity.model.Place;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class AdministrationActivity extends AppCompatActivity implements OnMapReadyCallback {
     static final double INIT_LAT = 37.51036888646457;
     static final double INIT_LON = 15.085487628719221;
-    final static String PLACE_NODE = "/place/";
     GoogleMap googleMap;
     FirebaseAuth fAuth;
     DatabaseReference dbReference;
@@ -55,9 +59,9 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fAuth = FirebaseAuth.getInstance();
         setContentView(R.layout.activity_administration);
-        Toast.makeText(getApplicationContext(), "Tocca la mappa per creare nuovi luoghi", Toast.LENGTH_SHORT).show();
+        fAuth = FirebaseAuth.getInstance();
+        Toast.makeText(getApplicationContext(), R.string.touch_to_create_place, Toast.LENGTH_SHORT).show();
         dbReference = FirebaseDatabase.getInstance().getReference();
         placeTypes = getResources().getStringArray(R.array.place_types);
         typeAdapter = new ArrayAdapter<>(getApplicationContext(),
@@ -87,7 +91,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         LatLng initCoordinates = new LatLng(INIT_LAT, INIT_LON);
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(initCoordinates,14, 1, 1)));
 
-        //get PLaces from Firebase db
+        //get places from Firebase db
         placeDatabaseListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -99,19 +103,19 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
                     double placeLon = place.getLongitude();
                     LatLng coordinates = new LatLng(placeLat, placeLon);
                     Marker addedMarker = googleMap.addMarker(new MarkerOptions().position(coordinates).title(placeName));
-                    addedMarker.setSnippet("Tocca qui per eliminare il luogo");
+                    addedMarker.setSnippet(getString(R.string.touch_to_delete_place));
                     markerPlaceMap.put(addedMarker, place);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.operation_not_permitted, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
         };
 
-        dbReference.child("place").addListenerForSingleValueEvent(placeDatabaseListener);
+        dbReference.child(getString(R.string.db_place)).addListenerForSingleValueEvent(placeDatabaseListener);
 
         addMapsPlaceListener = new GoogleMap.OnMapClickListener() {
             @Override
@@ -132,10 +136,10 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
                             double placeLat = latLng.latitude;
                             double placeLon = latLng.longitude;
                             LatLng newPlaceCoord = new LatLng(placeLat, placeLon);
-                            String placeType = typeTxt.getText().toString().equals("Partenza") ? "START" : "STOP";
+                            String placeType = typeTxt.getText().toString().equals(getString(R.string.Start)) ? getString(R.string.db_start) : getString(R.string.db_stop);
                             Place newPlace = new Place(placeName, placeLat, placeLon, placeType);
                             savePlace(newPlace);
-                            Marker newMarker = googleMap.addMarker(new MarkerOptions().position(newPlaceCoord).title(placeName).snippet("Tocca qui per eliminare il luogo"));
+                            Marker newMarker = googleMap.addMarker(new MarkerOptions().position(newPlaceCoord).title(placeName).snippet(getString(R.string.touch_to_delete_place)));
                             markerPlaceMap.put(newMarker, newPlace);
                             dialog.hide();
                         }
@@ -188,8 +192,8 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         placeNameTxt.setText(placeToDelete.getName());
         placeLatTxt.setText(String.valueOf(placeToDelete.getLatitude()));
         placeLonTxt.setText(String.valueOf(placeToDelete.getLongitude()));
-        placeTypeTxt.setText(placeToDelete.getType().equals("START") ? "Partenza" : "Destinazione");
-        dialogTypeTxt.setText("Conferma eliminazione");
+        placeTypeTxt.setText(placeToDelete.getType().equals(getString(R.string.Start)) ? getString(R.string.db_start) : getString(R.string.db_stop));
+        dialogTypeTxt.setText(R.string.confirm_deletion);
 
         placeNameTxt.setFocusable(false);
         placeTypeTxt.setFocusable(false);
@@ -206,7 +210,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
         type = String.valueOf(placeTypeTxt.getText());
 
         if(name.isEmpty()){
-            placeNameLayout.setError("Inserire un nome");
+            placeNameLayout.setError(getString(R.string.choose_name));
             return false;
         }else{
             if(placeNameLayout.getError() != null){
@@ -214,7 +218,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
             }
         }
         if(TextUtils.isEmpty(type)){
-            placeTypeLayout.setError("Selezionare una tipologia");
+            placeTypeLayout.setError(getString(R.string.choose_type));
             return false;
         }else{
             placeTypeLayout.setErrorEnabled(false);
@@ -223,16 +227,17 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void savePlace(Place newPlace){
-        String key = dbReference.child("place").push().getKey();
+        String key = dbReference.child(DB_PLACE).push().getKey();
 
         Map<String, Object> placeValues = newPlace.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put(PLACE_NODE + key, placeValues);
+        newPlace.setId(key);
 
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Toast.makeText(getApplicationContext(), "Luogo creato correttamente", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.correct_created_place, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -249,7 +254,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
 
                 markerPlaceMap.remove(marker);
                 dialog.hide();
-                Toast.makeText(getApplicationContext(), "Luogo eliminato con successo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.correct_deleted_place, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -258,7 +263,7 @@ public class AdministrationActivity extends AppCompatActivity implements OnMapRe
     public void onDestroy() {
         super.onDestroy();
         btnLogout.setOnClickListener(null);
-        dbReference.child("place").removeEventListener(placeDatabaseListener);
+        dbReference.child(getString(R.string.db_place)).removeEventListener(placeDatabaseListener);
         googleMap.setOnMapClickListener(null);
         googleMap.setOnInfoWindowClickListener(null);
     }

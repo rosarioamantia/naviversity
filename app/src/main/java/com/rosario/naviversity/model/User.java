@@ -1,7 +1,8 @@
-package com.rosario.naviversity;
+package com.rosario.naviversity.model;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.rosario.naviversity.Role;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ public class User implements Serializable {
     private int lastNotificationNumber = 0;
     private String surname;
     private String phone;
+    private String role;
     private boolean carOwner = false;
     private Car car = null;
     private String votedOwner = null;
@@ -23,11 +25,12 @@ public class User implements Serializable {
     private HashMap<String, String> notification;
     private int score = 0;
 
-    public User(String name, String surname, String phone){
+    public User(String name, String surname, String phone, Role role){
         this.name = name;
         this.surname = surname;
         this.phone = phone;
         this.notification = new HashMap<>();
+        this.role = role.toString();
     }
 
     public int getLastNotificationNumber() {
@@ -119,6 +122,14 @@ public class User implements Serializable {
         this.notification = notification;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     @Exclude
     public String getCompleteName(){
         return name + " " + surname;
@@ -137,6 +148,7 @@ public class User implements Serializable {
         result.put("ratingReceived", ratingReceived);
         result.put("notification", notification);
         result.put("lastNotificationNumber", lastNotificationNumber);
+        result.put("role", role);
         return result;
     }
 }

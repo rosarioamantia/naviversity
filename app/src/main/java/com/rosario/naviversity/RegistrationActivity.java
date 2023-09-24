@@ -1,6 +1,8 @@
 package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
+import static com.rosario.naviversity.Constants.USER_NODE;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -38,12 +40,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.rosario.naviversity.model.Car;
+import com.rosario.naviversity.model.User;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 public class RegistrationActivity extends AppCompatActivity {
-    final static String USER_NODE = "/user/";
     private final int PICK_IMAGE_REQUEST = 100;
     private final int READ_STORAGE_REQUEST = 200;
     Button btnReg;
@@ -67,6 +71,7 @@ public class RegistrationActivity extends AppCompatActivity {
         super.onBackPressed();
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
+        finish();
     }
 
     @Override
@@ -145,7 +150,7 @@ public class RegistrationActivity extends AppCompatActivity {
                                     fUser.sendEmailVerification()
                                             .addOnCompleteListener(emailTask -> {
                                                 if (emailTask.isSuccessful()) {
-                                                    Toast.makeText(getApplicationContext(), "Ti è stata mandata una e-mail di conferma", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(getApplicationContext(), R.string.confirmation_mail_send, Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                 } else {
@@ -181,7 +186,7 @@ public class RegistrationActivity extends AppCompatActivity {
                     Intent galleryIntent = new Intent();
                     galleryIntent.setType("image/*");
                     galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-                    startActivityForResult(Intent.createChooser(galleryIntent, "Seleziona immagine del profilo"), PICK_IMAGE_REQUEST);
+                    startActivityForResult(Intent.createChooser(galleryIntent, getString(R.string.select_profile_image)), PICK_IMAGE_REQUEST);
                 } else {
                     ActivityCompat.requestPermissions(RegistrationActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_REQUEST);
                 }
@@ -194,7 +199,7 @@ public class RegistrationActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == READ_STORAGE_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(), "Devi accettare i permessi allo storage del dispositivo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.accept_storage_permission), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -221,7 +226,7 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private void saveNewUserData(String name, String surname, String phone, FirebaseUser fUser){
-        User user = new User(name, surname, phone);
+        User user = new User(name, surname, phone, Role.USER);
         if(carSwitch.isChecked()){
             String model = String.valueOf(carModelTxt.getText());
             String plate = String.valueOf(carPlateTxt.getText()).toUpperCase();
@@ -240,7 +245,7 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     public void updateUserProfileImage(FirebaseUser fUser){
-        StorageReference fileRef = storageReference.child("/profile_images/" + mAuth.getCurrentUser().getUid());
+        StorageReference fileRef = storageReference.child(getString(R.string.profile_images_path) + mAuth.getCurrentUser().getUid());
         fileRef.putFile(profileImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -264,42 +269,42 @@ public class RegistrationActivity extends AppCompatActivity {
         phone = String.valueOf(editTextPhone.getText());
         email = String.valueOf(editTextEmail.getText());
         password = String.valueOf(editTextPassword.getText());
-        String unictRegexPattern = "^[A-Za-z0-9._%+-]+@" + Pattern.quote("studium.unict.it") + "$";
+        String unictRegexPattern = getString(R.string.email_regex_pattern) + Pattern.quote(getString(R.string.mail_unict_domain)) + "$";
 
         if(TextUtils.isEmpty(email)){
-            editTextEmail.setError("Inserire un'email");
+            editTextEmail.setError(getString(R.string.insert_mail));
             editTextEmail.requestFocus();
             return false;
         }
         else{
             if(!email.matches(unictRegexPattern)){
-                editTextEmail.setError("Inserire un'e-mail unict");
+                editTextEmail.setError(getString(R.string.insert_unict_mail));
                 editTextEmail.requestFocus();
                 return false;
             }
         }
         if(TextUtils.isEmpty(password)){
-            editTextPassword.setError("Inserire una password");
+            editTextPassword.setError(getString(R.string.insert_a_password));
             editTextPassword.requestFocus();
             return false;
         }
         if(TextUtils.isEmpty(name)){
-            editTextName.setError("Inserire un nome");
+            editTextName.setError(getString(R.string.insert_a_name));
             editTextName.requestFocus();
             return false;
         }
         if(TextUtils.isEmpty(surname)){
-            editTextSurname.setError("Inserire un cognome");
+            editTextSurname.setError(getString(R.string.insert_a_surname));
             editTextSurname.requestFocus();
             return false;
         }
         if(TextUtils.isEmpty(phone)){
-            editTextPhone.setError("Inserire un cellulare");
+            editTextPhone.setError(getString(R.string.insert_a_phone));
             editTextPhone.requestFocus();
             return false;
         }
         if(profileImageUri == null){
-            Toast.makeText(getApplicationContext(), "Devi scegliere un'immagine del profilo", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.must_choose_profile_image, Toast.LENGTH_SHORT).show();
             return false;
         }
         if(carSwitch.isChecked() && !checkFilledCarValues()){
@@ -313,23 +318,23 @@ public class RegistrationActivity extends AppCompatActivity {
         String carColor = carColorTxt.getText().toString();
         String carPlate = carPlateTxt.getText().toString();
         if(carModel.isEmpty()){
-            Toast.makeText(getApplicationContext(), "Devi inserire un modello di auto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.car_model_insert), Toast.LENGTH_SHORT).show();
             return false;
         }else if(carColor.isEmpty()){
-            Toast.makeText(getApplicationContext(), "Devi inserire un colore di auto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.car_color_insert), Toast.LENGTH_SHORT).show();
             return false;
         }else if(carPlate.isEmpty()){
-            Toast.makeText(getApplicationContext(), "Devi inserire una targa di auto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.car_plate_insert), Toast.LENGTH_SHORT).show();
             return false;
         }else if(!isValidCarPlate(carPlate.toUpperCase())){
-            Toast.makeText(getApplicationContext(), "Devi inserire una targa valida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.car_plate_valid_insert), Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
     }
 
     public boolean isValidCarPlate(String carPlate){
-        String plateRegex = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
+        String plateRegex = getString(R.string.italian_plate_regex);
         return carPlate.matches(plateRegex);
     }
 

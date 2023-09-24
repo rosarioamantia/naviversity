@@ -1,6 +1,11 @@
-package com.rosario.naviversity;
+package com.rosario.naviversity.adapter;
 
 import static android.content.ContentValues.TAG;
+import static com.rosario.naviversity.Constants.DB_USER;
+import static com.rosario.naviversity.Constants.NOTIFICATION_NODE;
+import static com.rosario.naviversity.Constants.RIDE_NODE;
+import static com.rosario.naviversity.Constants.USER_NODE;
+
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +25,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rosario.naviversity.R;
+import com.rosario.naviversity.model.Ride;
+import com.rosario.naviversity.model.User;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -28,9 +37,6 @@ import java.util.Map;
 
 public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<ConfirmRideRecyclerViewAdapter.MyViewHolder>{
     Context context;
-    final static String NOTIFICATION_NODE = "/notification/";
-    final static String USER_NODE = "/user/";
-    final static String RIDE_NODE = "/ride/";
     ArrayList<Ride> listRides;
     FirebaseDatabase mDatabase;
     DatabaseReference dbReference;
@@ -78,7 +84,7 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
             @Override
             public void onClick(View view) {
 
-                dbReference.child("user").child(fAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                dbReference.child(DB_USER).child(fAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         User user = snapshot.getValue(User.class);
@@ -88,7 +94,7 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
                     }
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context.getApplicationContext(), context.getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                         Log.e(TAG, error.getMessage());
                     }
                 });
@@ -98,7 +104,7 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
 
     public void writeUserInRide(User user, Ride ride){
         Map<String, Object> childUpdates = new HashMap<>();
-        dbReference.child("user").child(ride.getOwner()).addListenerForSingleValueEvent(new ValueEventListener() {
+        dbReference.child(DB_USER).child(ride.getOwner()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 User rideOwner = snapshot.getValue(User.class);
@@ -132,14 +138,14 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
                 dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        Toast.makeText(context.getApplicationContext(), "Prenotazione confermata", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context.getApplicationContext(), context.getString(R.string.booking_confirmed), Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                     }
                 });
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(context.getApplicationContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context.getApplicationContext(), context.getString(R.string.operation_not_permitted), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
         });
@@ -163,7 +169,7 @@ public class ConfirmRideRecyclerViewAdapter extends RecyclerView.Adapter<Confirm
     //unique key linking date and time (for HashMap)
     public String generateKeyNotification(){
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(context.getString(R.string.notification_key_pattern));
         String key = now.format(formatter);
         return key;
     }

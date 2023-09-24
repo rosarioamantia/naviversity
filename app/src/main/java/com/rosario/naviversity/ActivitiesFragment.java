@@ -1,6 +1,8 @@
 package com.rosario.naviversity;
 
 import static android.content.ContentValues.TAG;
+import static com.rosario.naviversity.Constants.DB_RIDE;
+
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -18,6 +20,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rosario.naviversity.adapter.RideRecyclerViewAdapter;
+import com.rosario.naviversity.model.Ride;
+import com.rosario.naviversity.model.User;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -66,18 +72,18 @@ public class ActivitiesFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Non puoi eseguire questa operazione", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.operation_not_permitted, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, error.getMessage());
             }
         };
 
-        dbReference.child("ride").addListenerForSingleValueEvent(ridesDataListener);
+        dbReference.child(DB_RIDE).addListenerForSingleValueEvent(ridesDataListener);
         return view;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        dbReference.child("ride").removeEventListener(ridesDataListener);
+        dbReference.child(DB_RIDE).removeEventListener(ridesDataListener);
     }
 }
