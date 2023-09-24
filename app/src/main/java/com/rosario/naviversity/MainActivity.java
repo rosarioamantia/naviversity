@@ -31,20 +31,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart(){
         super.onStart();
-        Intent intent;
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
-            if(currentUser.getUid().equals(ADMIN_ID)){
-                intent = new Intent(getApplicationContext(), AdministrationActivity.class);
-                startActivity(intent);
-                finish();
-            }
-            else if(currentUser.isEmailVerified()){
-                intent = new Intent(getApplicationContext(), HomepageActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        }
+        login();
     }
 
     @Override
@@ -90,20 +77,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            FirebaseUser currentUser = mAuth.getCurrentUser();
-                            Intent intent;
-                            if(currentUser.getUid().equals(ADMIN_ID)){
-                                intent = new Intent(getApplicationContext(), AdministrationActivity.class);
-                                startActivity(intent);
-                                finish();
-                            }
-                            else if(!currentUser.isEmailVerified()) {
-                                Toast.makeText(getApplicationContext(), R.string.unict_mail_verify, Toast.LENGTH_SHORT).show();
-                            }else{
-                                intent = new Intent(getApplicationContext(), HomepageActivity.class);
-                                startActivity(intent);
-                                finish();
-                            }
+                            login();
                         }else{
                             Toast.makeText(getApplicationContext(), R.string.incorrect_credentials, Toast.LENGTH_SHORT).show();
                         }
@@ -127,6 +101,24 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    public void login(){
+        if(mAuth.getCurrentUser() != null){
+            Intent intent;
+            if(mAuth.getUid().equals(ADMIN_ID)){
+                intent = new Intent(getApplicationContext(), AdministrationActivity.class);
+                startActivity(intent);
+                finish();
+            }
+            else if(!mAuth.getCurrentUser().isEmailVerified()) {
+                Toast.makeText(getApplicationContext(), R.string.unict_mail_verify, Toast.LENGTH_SHORT).show();
+            }else{
+                intent = new Intent(getApplicationContext(), HomepageActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        }
     }
 
     @Override
