@@ -62,7 +62,8 @@ public class HomepageActivity extends AppCompatActivity {
         notifcationIcon = findViewById(R.id.notification_icon);
         notificationCard = findViewById(R.id.notification_card);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        frameLayout = findViewById(R.id.frameLayout);
+        frameLayout = findViewById(R.id.fragment_container);
+
         getNotificationListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -124,6 +125,7 @@ public class HomepageActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), R.string.no_notification, Toast.LENGTH_SHORT).show();
                 }
             }
+
         });
 
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
@@ -149,7 +151,7 @@ public class HomepageActivity extends AppCompatActivity {
         notificationCard.setVisibility(View.GONE);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.frameLayout, fragment);
+        fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.commit();
     }
 

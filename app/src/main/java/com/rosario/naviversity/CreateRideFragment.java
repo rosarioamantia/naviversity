@@ -80,7 +80,7 @@ public class CreateRideFragment extends Fragment {
     List<Place> listStart;
     List<Place> listStop;
     Place start;
-    BottomSheetDialog dialog;
+    BottomSheetDialog creationDialog;
     Place stop;
     DatePickerDialog datePicker;
     TextInputEditText timeText;
@@ -346,18 +346,18 @@ public class CreateRideFragment extends Fragment {
     }
 
     private void showConfirmRideCreationDialog(View confirmRideCreationView, GoogleMap googleMap){
-        dialog = new BottomSheetDialog(getContext());
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        creationDialog = new BottomSheetDialog(getContext());
+        creationDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
                 reloadGoogleMap(googleMap);
             }
         });
-        dialog.setContentView(confirmRideCreationView);
+        creationDialog.setContentView(confirmRideCreationView);
         dateText = confirmRideCreationView.findViewById(R.id.rideDate);
         timeText = confirmRideCreationView.findViewById(R.id.rideTime);
         fillDialogData(confirmRideCreationView);
-        dialog.show();
+        creationDialog.show();
         btnConfirm = confirmRideCreationView.findViewById(R.id.btnConfirm);
 
         dateText.setOnClickListener(new View.OnClickListener() {
@@ -397,7 +397,7 @@ public class CreateRideFragment extends Fragment {
                 if(checkDateTime(confirmRideCreationView)){
                     if(user != null && user.isCarOwner()){
                         writeNewRide();
-                        dialog.hide();
+                        creationDialog.hide();
                     }else{
                         Toast.makeText(getContext(), R.string.car_needed, Toast.LENGTH_SHORT).show();
                     }
@@ -440,7 +440,7 @@ public class CreateRideFragment extends Fragment {
         dbReference.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                    Toast.makeText(getContext(), R.string.confirm_ride_creation, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.confirm_ride_creation, Toast.LENGTH_SHORT).show();
                 reloadGoogleMap(googleMap);
             }
         });
@@ -448,22 +448,6 @@ public class CreateRideFragment extends Fragment {
 
     private void setGoogleMap(GoogleMap gMap){
         this.googleMap = gMap;
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if(btnConfirm != null){
-            btnConfirm.setOnClickListener(null);
-        }
-        if(timeText != null){
-            timeText.setOnClickListener(null);
-        }
-        if(dateText != null){
-            dateText.setOnClickListener(null);
-        }
-        if(dialog != null){
-            dialog.setOnDismissListener(null);
-        }
     }
 
     public String generateMessageNotificationOwner(Ride ride){
@@ -477,5 +461,21 @@ public class CreateRideFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(getString(R.string.notification_key_pattern));
         String key = now.format(formatter);
         return key;
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(btnConfirm != null){
+            btnConfirm.setOnClickListener(null);
+        }
+        if(timeText != null){
+            timeText.setOnClickListener(null);
+        }
+        if(dateText != null){
+            dateText.setOnClickListener(null);
+        }
+        if(creationDialog != null){
+            creationDialog.setOnDismissListener(null);
+        }
     }
 }
